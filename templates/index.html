@@ -1,0 +1,2024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML Studio — Teachable Machine</title>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Roboto',sans-serif;background:#f1f3f4;color:#202124;min-height:100vh}
+
+/* NAV */
+nav{background:#fff;height:56px;display:flex;align-items:center;padding:0 16px;gap:10px;border-bottom:1px solid #e0e0e0;position:sticky;top:0;z-index:200}
+.nav-ham{width:40px;height:40px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;border-radius:50%;transition:background .15s}
+.nav-ham:hover{background:#f1f3f4}
+.nav-ham span{display:block;width:18px;height:2px;background:#5f6368;border-radius:1px}
+.nav-logo{font-family:'Google Sans',sans-serif;font-size:20px;font-weight:500;color:#1a73e8}
+.nav-sep{color:#dadce0;font-size:22px;margin:0 2px}
+.nav-proj{font-family:'Google Sans',sans-serif;font-size:15px;color:#5f6368;border:none;background:transparent;outline:none;cursor:pointer;padding:4px 8px;border-radius:4px;transition:background .15s}
+.nav-proj:hover{background:#f1f3f4}
+.nav-tabs{display:flex;gap:2px;margin-left:20px}
+.ntab{padding:6px 16px;border-radius:20px;font-family:'Google Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:#5f6368;display:flex;align-items:center;gap:6px;transition:all .2s}
+.ntab:hover{background:#f1f3f4;color:#202124}
+.ntab.active{background:#e8f0fe;color:#1a73e8}
+.ntab .dot{width:8px;height:8px;border-radius:50%}
+.nav-acts{margin-left:auto;display:flex;gap:8px;align-items:center}
+.nav-btn{padding:7px 16px;border-radius:4px;font-family:'Google Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:1px solid #dadce0;background:#fff;color:#202124;transition:all .15s}
+.nav-btn:hover{background:#f1f3f4}
+.nav-btn.pri{background:#1a73e8;color:#fff;border-color:#1a73e8}
+.nav-btn.pri:hover{background:#1557b0}
+
+/* ── LANGUAGE TOGGLE ── */
+.lang-toggle{
+  display:flex;align-items:center;
+  background:#f1f3f4;border-radius:20px;
+  padding:3px;gap:2px;
+  border:1px solid #e0e0e0;
+}
+.lang-btn{
+  padding:4px 12px;border-radius:16px;
+  font-family:'Google Sans',sans-serif;font-size:12px;font-weight:500;
+  cursor:pointer;border:none;background:transparent;
+  color:#5f6368;transition:all .18s;
+}
+.lang-btn.active{background:#fff;color:#1a73e8;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.lang-btn:hover:not(.active){color:#202124}
+
+/* PAGES */
+.page{display:none}
+.page.active{display:block}
+.layout{display:flex;align-items:flex-start;padding:28px 20px 80px;gap:0}
+
+/* COLS */
+.col-l{width:340px;flex-shrink:0;display:flex;flex-direction:column;gap:14px}
+.col-m{flex-shrink:0;width:220px}
+.col-r{flex:1;min-width:0}
+
+/* CONNECTOR */
+.conn{flex-shrink:0;width:68px;display:flex;align-items:flex-start;justify-content:center;padding-top:70px}
+.conn svg{width:68px;height:44px}
+
+/* CARDS */
+.card{background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.06);overflow:hidden}
+.card-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px}
+.card-bd{padding:0 18px 18px}
+.card-title{font-family:'Google Sans',sans-serif;font-size:15px;font-weight:500;color:#202124}
+
+/* chip */
+.chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;font-family:'Google Sans',sans-serif;margin-bottom:12px}
+.chip-b{background:#e8f0fe;color:#1a73e8}
+.chip-g{background:#e6f4ea;color:#1e8e3e}
+.chip-o{background:#fef3e2;color:#e37400}
+
+/* sample btns */
+.sbtns{display:flex;gap:8px}
+.sbtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:76px;height:68px;border:none;border-radius:4px;background:#e8f0fe;color:#1a73e8;font-size:11px;font-weight:500;font-family:'Google Sans',sans-serif;cursor:pointer;transition:background .15s}
+.sbtn:hover{background:#d2e3fc}
+.sbtn.g{background:#e6f4ea;color:#1e8e3e}
+.sbtn.g:hover{background:#ceead6}
+.sbtn.o{background:#fef3e2;color:#e37400}
+.sbtn.o:hover{background:#fde3b0}
+.sbtn svg{width:20px;height:20px;fill:currentColor}
+
+.sel-lbl{font-size:12px;color:#5f6368;margin-bottom:10px}
+.cfg{display:flex;flex-direction:column;gap:10px}
+.cfg-row{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:#5f6368}
+.cfg-inp{width:70px;padding:5px 8px;border:1px solid #dadce0;border-radius:4px;font-size:12px;text-align:right;outline:none;font-family:'Roboto',sans-serif}
+.cfg-inp:focus{border-color:#1a73e8}
+select.cfg-sel{padding:5px 8px;border:1px solid #dadce0;border-radius:4px;font-size:12px;background:#fff;outline:none;font-family:'Roboto',sans-serif;cursor:pointer;color:#202124}
+
+/* train panel */
+.train-card{width:220px}
+.tp-title{font-family:'Google Sans',sans-serif;font-size:16px;font-weight:500;padding:16px 18px 12px;color:#202124}
+.train-btn{display:block;width:calc(100% - 28px);margin:0 14px 12px;padding:10px;border:none;border-radius:4px;font-size:14px;font-weight:500;font-family:'Google Sans',sans-serif;cursor:pointer;transition:all .2s;background:#f1f3f4;color:#202124}
+.train-btn.ready-b{background:#1a73e8;color:#fff}
+.train-btn.ready-b:hover{background:#1557b0}
+.train-btn.ready-g{background:#1e8e3e;color:#fff}
+.train-btn.ready-g:hover{background:#166430}
+.train-btn.ready-o{background:#e37400;color:#fff}
+.train-btn.ready-o:hover{background:#b85f00}
+.train-btn.running,.train-btn.running-g,.train-btn.running-o{color:#fff;pointer-events:none}
+.train-btn.running{background:linear-gradient(90deg,#1a73e8,#4285f4,#1a73e8);background-size:200% 100%;animation:shimmer 1.2s linear infinite}
+.train-btn.running-g{background:linear-gradient(90deg,#1e8e3e,#34a853,#1e8e3e);background-size:200% 100%;animation:shimmer 1.2s linear infinite}
+.train-btn.running-o{background:linear-gradient(90deg,#e37400,#f9ab00,#e37400);background-size:200% 100%;animation:shimmer 1.2s linear infinite}
+@keyframes shimmer{to{background-position:-200% 0}}
+
+.adv-row{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-top:1px solid #f1f3f4;cursor:pointer;transition:background .15s}
+.adv-row:hover{background:#f8f9fa}
+.adv-lbl{font-size:13px;color:#5f6368}
+.chev{transition:transform .2s;color:#9aa0a6;font-size:14px}
+.chev.open{transform:rotate(90deg)}
+.adv-body{display:none;padding:10px 18px;border-top:1px solid #f1f3f4;background:#fafafa}
+.adv-body.open{display:block}
+.adv-f{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;font-size:12px;color:#5f6368}
+.adv-inp{width:64px;padding:4px 6px;border:1px solid #dadce0;border-radius:4px;font-size:12px;text-align:right;outline:none}
+.adv-inp:focus{border-color:#1a73e8}
+
+/* progress */
+.prog{display:none;padding:10px 18px;border-top:1px solid #f1f3f4}
+.prog.on{display:block}
+.prog-hd{display:flex;justify-content:space-between;font-size:11px;color:#5f6368;margin-bottom:5px}
+.prog-track{height:4px;background:#e0e0e0;border-radius:2px;overflow:hidden;margin-bottom:5px}
+.prog-fill{height:100%;border-radius:2px;width:0%;transition:width .15s}
+.prog-info{font-size:10px;color:#9aa0a6}
+
+/* preview */
+.prev-hd{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid #f1f3f4}
+.prev-title{font-family:'Google Sans',sans-serif;font-size:16px;font-weight:500}
+.exp-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border:1px solid #dadce0;border-radius:4px;background:#fff;font-size:12px;font-weight:500;font-family:'Google Sans',sans-serif;color:#5f6368;cursor:pointer;transition:all .15s;opacity:.45;pointer-events:none}
+.exp-btn.on{opacity:1;color:#202124;pointer-events:all}
+.exp-btn.on:hover{background:#f8f9fa;border-color:#1a73e8;color:#1a73e8}
+.prev-body{padding:18px}
+.no-msg{font-size:13px;color:#5f6368;line-height:1.65}
+
+canvas.vis{display:none;width:100%;border-radius:6px;border:1px solid #e0e0e0;margin-bottom:12px}
+canvas.vis.on{display:block}
+
+/* result bars */
+.res-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.res-name{width:80px;font-size:12px;font-family:'Google Sans',sans-serif;font-weight:500;color:#202124;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.res-track{flex:1;height:8px;background:#f1f3f4;border-radius:4px;overflow:hidden}
+.res-fill{height:100%;border-radius:4px;width:0%;transition:width .6s ease}
+.res-pct{font-size:11px;color:#5f6368;width:34px;text-align:right;flex-shrink:0}
+
+/* stat grid */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stat-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.stat-box{background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:8px 12px}
+.stat-lbl{font-size:10px;color:#9aa0a6;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.stat-val{font-size:18px;font-weight:500;font-family:'Google Sans',sans-serif;color:#202124}
+
+/* RL */
+.env-wrap{display:flex;justify-content:center;margin-bottom:14px}
+.rl-grid-el{display:inline-grid;gap:2px;background:#e0e0e0;border-radius:6px;overflow:hidden;border:2px solid #e0e0e0}
+.cell{width:42px;height:42px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;transition:background .15s}
+.cell:hover:not(.wall){background:#f1f3f4}
+.cell.wall{background:#5f6368;cursor:default}
+.cell.goal{background:#e6f4ea}
+.cell.agent{background:#e8f0fe}
+.cell.danger{background:#fce8e6}
+.policy-grid-el{display:inline-grid;gap:2px;background:#e0e0e0;border-radius:6px;overflow:hidden;border:2px solid #e0e0e0}
+.pcell{width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:16px;border:1px solid #e0e0e0;background:#fafafa;transition:all .3s}
+.rl-btns{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.rl-btn{padding:7px 14px;border:1px solid #dadce0;border-radius:4px;background:#fff;font-size:12px;font-weight:500;font-family:'Google Sans',sans-serif;cursor:pointer;transition:all .15s;color:#202124}
+.rl-btn:hover{background:#f1f3f4}
+.rl-btn.pri{background:#1a73e8;color:#fff;border-color:#1a73e8}
+.rl-btn.pri:hover{background:#1557b0}
+.rl-btn.dan{background:#fce8e6;color:#c5221f;border-color:#f5c6c2}
+
+/* log */
+.ep-log{background:#1e1e2e;border-radius:6px;padding:8px 12px;font-size:11px;color:#8ab4f8;font-family:'Roboto Mono',monospace;height:76px;overflow-y:auto;line-height:1.65}
+.ep-log .ok{color:#81c995}
+.ep-log .fail{color:#f28b82}
+
+/* chart */
+.chart-wrap{background:#fff;border:1px solid #e0e0e0;border-radius:6px;padding:10px 14px;margin-bottom:12px}
+.chart-lbl{font-size:11px;color:#5f6368;margin-bottom:6px;font-family:'Google Sans',sans-serif}
+
+/* cluster badges */
+.cl-badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.cl-badge{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:14px;font-size:11px;font-weight:500;font-family:'Google Sans',sans-serif}
+
+/* spinner */
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* acc badge */
+.acc-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;font-family:'Google Sans',sans-serif;background:#e6f4ea;color:#1e8e3e;margin-bottom:10px}
+
+/* bottom bar */
+.btm{position:fixed;bottom:0;left:0;right:0;height:36px;background:#fff;border-top:1px solid #e0e0e0;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-size:11px;color:#5f6368;z-index:100}
+.btm-left{display:flex;align-items:center;gap:6px}
+.btm-langbtn{display:flex;align-items:center;gap:4px;cursor:pointer;padding:3px 8px;border-radius:4px;transition:background .15s;font-size:11px;color:#5f6368;border:none;background:transparent}
+.btm-langbtn:hover{background:#f1f3f4}
+
+/* toast */
+.toast{position:fixed;bottom:48px;left:50%;transform:translateX(-50%);background:#323232;color:#fff;padding:9px 16px;border-radius:4px;font-size:12px;z-index:999;box-shadow:0 2px 8px rgba(0,0,0,.3);animation:fup .25s ease;pointer-events:none;white-space:nowrap}
+@keyframes fup{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+.fi{display:none}
+.acc-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px}
+.acc-table th{background:#f1f3f4;padding:6px 10px;text-align:left;font-family:'Google Sans',sans-serif;font-weight:500;font-size:11px;color:#5f6368;text-transform:uppercase;letter-spacing:.3px}
+.acc-table td{padding:6px 10px;border-bottom:1px solid #f1f3f4;color:#202124}
+.acc-table tr:last-child td{border-bottom:none}
+
+/* ── TM supervised exact styles ── */
+.tm-class-card{background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.06);overflow:hidden;transition:box-shadow .2s}
+.tm-class-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.14)}
+.tm-class-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px;border-bottom:1px solid #f5f5f5}
+.tm-class-name{font-family:'Google Sans',sans-serif;font-size:16px;font-weight:500;color:#202124;border:none;outline:none;background:transparent;min-width:60px;max-width:200px}
+.tm-class-name:focus{border-bottom:2px solid #1a73e8}
+.tm-edit-ico{color:#9aa0a6;cursor:pointer;display:flex;align-items:center;padding:2px;border-radius:3px;transition:color .15s}
+.tm-edit-ico:hover{color:#1a73e8}
+.tm-kebab{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:50%;cursor:pointer;font-size:20px;color:#5f6368;transition:background .15s;position:relative;line-height:1}
+.tm-kebab:hover{background:#f1f3f4}
+.tm-kmenu{position:absolute;top:36px;right:0;background:#fff;border-radius:4px;box-shadow:0 2px 10px rgba(0,0,0,.2);min-width:170px;display:none;z-index:60}
+.tm-kmenu.open{display:block}
+.tm-kitem{padding:10px 16px;font-size:13px;cursor:pointer;color:#202124;transition:background .15s}
+.tm-kitem:hover{background:#f1f3f4}
+.tm-kitem.danger{color:#d93025}
+.tm-class-bd{padding:14px 18px 18px}
+.tm-samples-lbl{font-size:13px;color:#5f6368;margin-bottom:12px}
+.tm-sbtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:82px;height:76px;border:none;border-radius:4px;background:#e8f0fe;color:#1a73e8;font-size:12px;font-weight:500;font-family:'Google Sans',sans-serif;cursor:pointer;transition:background .15s}
+.tm-sbtn:hover{background:#d2e3fc}
+.tm-thumbs{display:flex;flex-wrap:wrap;gap:4px;margin-top:12px}
+.tm-thumb{width:50px;height:50px;border-radius:4px;object-fit:cover;border:1px solid #e0e0e0;cursor:pointer;transition:transform .15s}
+.tm-thumb:hover{transform:scale(1.08)}
+.tm-more{width:50px;height:50px;border-radius:4px;background:#f1f3f4;border:1px solid #e0e0e0;display:flex;align-items:center;justify-content:center;font-size:11px;color:#5f6368;cursor:pointer}
+.tm-scount{font-size:12px;color:#5f6368;margin-top:8px}
+.tm-add-class{background:transparent;border:2px dashed #dadce0;border-radius:8px;padding:20px 16px;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:500;font-family:'Google Sans',sans-serif;color:#5f6368;cursor:pointer;transition:all .2s}
+.tm-add-class:hover{background:#fff;border-color:#1a73e8;color:#1a73e8;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.tm-panel{background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.06);overflow:hidden}
+.tm-panel-title{font-family:'Google Sans',sans-serif;font-size:16px;font-weight:500;padding:16px 18px 12px;color:#202124}
+.tm-train-btn{display:block;width:calc(100% - 28px);margin:0 14px 14px;padding:10px;border:none;border-radius:4px;font-size:14px;font-weight:500;font-family:'Google Sans',sans-serif;cursor:pointer;transition:all .2s;background:#f1f3f4;color:#202124}
+.tm-train-btn:hover{background:#e8eaed}
+.tm-train-btn.active{background:#1a73e8;color:#fff}
+.tm-train-btn.active:hover{background:#1557b0}
+.tm-train-btn.running{background:linear-gradient(90deg,#1a73e8,#4285f4,#1a73e8);background-size:200% 100%;animation:shimmer 1.2s linear infinite;color:#fff;pointer-events:none}
+.conf-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.conf-name{width:80px;font-size:13px;font-family:'Google Sans',sans-serif;font-weight:500;color:#202124;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.conf-track{flex:1;height:8px;background:#f1f3f4;border-radius:4px;overflow:hidden}
+.conf-fill{height:100%;border-radius:4px;width:0%;transition:width .6s ease}
+.conf-pct{font-size:12px;color:#5f6368;width:34px;text-align:right;flex-shrink:0}
+
+/* ── Preview mode tabs ── */
+.prev-mode-btn{
+  padding:4px 12px;border-radius:14px;font-size:11px;font-weight:500;
+  font-family:'Google Sans',sans-serif;cursor:pointer;
+  border:1px solid #dadce0;background:#fff;color:#5f6368;
+  transition:all .15s;
+}
+.prev-mode-btn.active{background:#1a73e8;color:#fff;border-color:#1a73e8}
+.prev-mode-btn:hover:not(.active){background:#f1f3f4}
+
+/* ── Preview action buttons ── */
+.prev-act-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:6px;
+  font-family:'Google Sans',sans-serif;font-size:12px;font-weight:500;
+  cursor:pointer;border:1px solid #dadce0;background:#fff;color:#202124;
+  transition:all .15s;
+}
+.prev-act-btn:hover{background:#f1f3f4}
+.prev-act-btn.pri{background:#1a73e8;color:#fff;border-color:#1a73e8}
+.prev-act-btn.pri:hover{background:#1557b0}
+
+/* ── Webcam modal overlay ── */
+#webcam-modal.open{display:flex !important}
+#share-modal.open{display:flex !important}
+
+/* ── Hold-to-record animation ── */
+@keyframes pulse-rec{0%,100%{opacity:1}50%{opacity:.5}}
+.recording{animation:pulse-rec .7s infinite}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-ham"><span></span><span></span><span></span></div>
+  <span class="nav-logo">Teaching AI with simulation</span>
+  <span class="nav-sep">/</span>
+  <input class="nav-proj" id="nav-proj-input" value="My ML Project" maxlength="40">
+  <div class="nav-tabs">
+    <button class="ntab active" onclick="switchPage('sup',this)">
+      <span class="dot" style="background:#1a73e8"></span><span data-i18n="tab_supervised">Supervised</span>
+    </button>
+    <button class="ntab" onclick="switchPage('uns',this)">
+      <span class="dot" style="background:#1e8e3e"></span><span data-i18n="tab_unsupervised">Unsupervised</span>
+    </button>
+    <button class="ntab" onclick="switchPage('rl',this)">
+      <span class="dot" style="background:#e37400"></span><span data-i18n="tab_rl">Reinforcement</span>
+    </button>
+  </div>
+  <div class="nav-acts">
+    <!-- Language Toggle -->
+    <div class="lang-toggle">
+      <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+      <button class="lang-btn active" id="btn-tm" onclick="setLang('tm')">TM</button>
+    </div>
+    <button class="nav-btn" onclick="document.getElementById('nav-upload-file').click()" data-i18n="btn_upload">⬆ Upload</button>
+    <input type="file" id="nav-upload-file" class="fi" accept="image/*,video/*,.json" onchange="handleNavUpload(this)">
+    <button class="nav-btn pri" onclick="openShareModal()" data-i18n="btn_share">Share</button>
+  </div>
+</nav>
+
+<!-- ═══════════════════════ SUPERVISED ═══════════════════════ -->
+<div class="page active" id="page-sup">
+<div class="layout" style="align-items:flex-start;padding:32px 24px 80px;gap:0">
+
+  <div style="width:380px;flex-shrink:0;display:flex;flex-direction:column;gap:16px" id="sup-classes">
+    <!-- Class 1 -->
+    <div class="tm-class-card" id="scc-0">
+      <div class="tm-class-hd">
+        <div style="display:flex;align-items:center;gap:8px">
+          <input class="tm-class-name" id="scname-0" value="Class 1" maxlength="30">
+          <span class="tm-edit-ico" onclick="focusCName('scname-0')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#9aa0a6"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+          </span>
+        </div>
+        <div class="tm-kebab" onclick="toggleKebab2('sckb-0')">⋮
+          <div class="tm-kmenu" id="sckb-0">
+            <div class="tm-kitem" onclick="focusCName('scname-0');closeKebab2('sckb-0')" data-i18n="menu_rename">✏️ Rename class</div>
+            <div class="tm-kitem danger" onclick="deleteSClass('scc-0',0)" data-i18n="menu_remove">🗑 Remove class</div>
+          </div>
+        </div>
+      </div>
+      <div class="tm-class-bd">
+        <div class="tm-samples-lbl" data-i18n="add_samples">Add Image Samples:</div>
+        <div style="display:flex;gap:10px">
+          <button class="tm-sbtn" onclick="openWebcam(0)">
+            <svg viewBox="0 0 24 24" fill="#1a73e8" width="22" height="22"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+            <span data-i18n="btn_webcam">Webcam</span>
+          </button>
+          <button class="tm-sbtn" onclick="triggerSUpload(0)">
+            <svg viewBox="0 0 24 24" fill="#1a73e8" width="22" height="22"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+            <span data-i18n="btn_upload">Upload</span>
+          </button>
+        </div>
+        <input type="file" class="fi" id="sfile-0" multiple accept="image/*" onchange="handleSUpload(0,this)">
+        <div class="tm-thumbs" id="sthumbs-0"></div>
+        <div class="tm-scount" id="sscount-0"></div>
+      </div>
+    </div>
+
+    <!-- Class 2 -->
+    <div class="tm-class-card" id="scc-1">
+      <div class="tm-class-hd">
+        <div style="display:flex;align-items:center;gap:8px">
+          <input class="tm-class-name" id="scname-1" value="Class 2" maxlength="30">
+          <span class="tm-edit-ico" onclick="focusCName('scname-1')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#9aa0a6"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+          </span>
+        </div>
+        <div class="tm-kebab" onclick="toggleKebab2('sckb-1')">⋮
+          <div class="tm-kmenu" id="sckb-1">
+            <div class="tm-kitem" onclick="focusCName('scname-1');closeKebab2('sckb-1')" data-i18n="menu_rename">✏️ Rename class</div>
+            <div class="tm-kitem danger" onclick="deleteSClass('scc-1',1)" data-i18n="menu_remove">🗑 Remove class</div>
+          </div>
+        </div>
+      </div>
+      <div class="tm-class-bd">
+        <div class="tm-samples-lbl" data-i18n="add_samples">Add Image Samples:</div>
+        <div style="display:flex;gap:10px">
+          <button class="tm-sbtn" onclick="openWebcam(1)">
+            <svg viewBox="0 0 24 24" fill="#1a73e8" width="22" height="22"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+            <span data-i18n="btn_webcam">Webcam</span>
+          </button>
+          <button class="tm-sbtn" onclick="triggerSUpload(1)">
+            <svg viewBox="0 0 24 24" fill="#1a73e8" width="22" height="22"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+            <span data-i18n="btn_upload">Upload</span>
+          </button>
+        </div>
+        <input type="file" class="fi" id="sfile-1" multiple accept="image/*" onchange="handleSUpload(1,this)">
+        <div class="tm-thumbs" id="sthumbs-1"></div>
+        <div class="tm-scount" id="sscount-1"></div>
+      </div>
+    </div>
+
+    <button class="tm-add-class" onclick="addSClass()">⊞ &nbsp;&nbsp;<span data-i18n="btn_add_class">Add a class</span></button>
+  </div>
+
+  <!-- Connector 1 -->
+  <div style="flex-shrink:0;width:72px;display:flex;align-items:flex-start;justify-content:center;padding-top:90px">
+    <svg width="72" height="50" viewBox="0 0 72 50" fill="none">
+      <path d="M 4 25 C 20 25 52 25 68 25" stroke="#c8c8c8" stroke-width="1.5"/>
+      <circle cx="4" cy="25" r="4" fill="#c8c8c8"/>
+      <circle cx="68" cy="25" r="4" fill="#c8c8c8"/>
+    </svg>
+  </div>
+
+  <!-- Training -->
+  <div style="flex-shrink:0;width:230px">
+    <div class="tm-panel">
+      <div class="tm-panel-title" data-i18n="training">Training</div>
+      <div style="padding:0 16px 10px;border-bottom:1px solid #f1f3f4">
+        <div style="font-size:12px;color:#5f6368;margin-bottom:6px" data-i18n="algorithm">Algorithm</div>
+        <select class="cfg-sel" id="s-algo" style="width:100%;font-size:13px;padding:7px 8px">
+          <option value="knn" data-i18n="algo_knn">K-Nearest Neighbors</option>
+          <option value="tree" data-i18n="algo_tree">Decision Tree</option>
+          <option value="logistic" data-i18n="algo_logistic">Logistic Regression</option>
+          <option value="svm" data-i18n="algo_svm">SVM (RBF)</option>
+        </select>
+      </div>
+      <button class="tm-train-btn" id="s-tbtn" onclick="trainSupervised()" data-i18n="btn_train_model">Train Model</button>
+      <div class="prog" id="s-prog" style="padding:10px 16px;border-top:1px solid #f1f3f4">
+        <div class="prog-hd"><span id="s-ep-txt">Epoch 0/50</span><span id="s-loss-txt">Loss: —</span></div>
+        <div class="prog-track"><div class="prog-fill" id="s-pfill" style="background:#1a73e8"></div></div>
+        <div class="prog-info" id="s-pinfo" data-i18n="preparing">Preparing...</div>
+      </div>
+      <div class="adv-row" onclick="toggleAdv('s-adv','s-chev')" style="padding:10px 16px">
+        <span class="adv-lbl" data-i18n="advanced">Advanced</span>
+        <svg class="chev" id="s-chev" width="18" height="18" viewBox="0 0 24 24" fill="#9aa0a6"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+      </div>
+      <div class="adv-body" id="s-adv">
+        <div class="adv-f"><span data-i18n="epochs">Epochs</span><input class="adv-inp" id="s-epochs" value="50" type="number" min="10" max="200"></div>
+        <div class="adv-f"><span data-i18n="samples_per_class">Samples / Class</span><input class="adv-inp" id="s-nsamp" value="100" type="number" min="20" max="500"></div>
+        <div class="adv-f"><span data-i18n="classes">Classes</span><input class="adv-inp" id="s-nclass" value="3" type="number" min="2" max="6"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Connector 2 -->
+  <div style="flex-shrink:0;width:72px;display:flex;align-items:flex-start;justify-content:center;padding-top:90px">
+    <svg width="72" height="50" viewBox="0 0 72 50" fill="none">
+      <path d="M 4 25 C 20 25 52 25 68 25" stroke="#c8c8c8" stroke-width="1.5"/>
+      <circle cx="4" cy="25" r="4" fill="#c8c8c8"/>
+      <circle cx="68" cy="25" r="4" fill="#c8c8c8"/>
+    </svg>
+  </div>
+
+  <!-- Preview -->
+  <div style="flex:1;min-width:0">
+    <div class="tm-panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #f1f3f4">
+        <span class="tm-panel-title" style="padding:0" data-i18n="preview">Preview</span>
+        <button class="exp-btn on" id="s-expbtn" onclick="exportModel()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+          <span data-i18n="export_model">Export Model</span>
+        </button>
+      </div>
+      <div style="padding:18px">
+        <div class="no-msg" id="s-nomsg" data-i18n="train_first">You must train a model on the left<br>before you can preview it here.</div>
+        <div id="s-results" style="display:none">
+          <div id="s-acc-badge" class="acc-badge" style="margin-bottom:12px">✓ Accuracy: —</div>
+
+          <!-- ── LIVE TEST SECTION ── -->
+          <div style="border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;margin-bottom:14px">
+            <div style="background:#f8f9fa;padding:10px 14px;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;justify-content:space-between">
+              <span style="font-size:12px;font-weight:500;font-family:'Google Sans',sans-serif;color:#202124" data-i18n="live_test">🔬 Live Test</span>
+              <div style="display:flex;gap:6px">
+                <button class="prev-mode-btn active" id="ptab-cam" onclick="setPrevMode('cam')" data-i18n="btn_webcam">📷 Webcam</button>
+                <button class="prev-mode-btn" id="ptab-file" onclick="setPrevMode('file')" data-i18n="btn_upload_solo">🖼 Upload</button>
+              </div>
+            </div>
+            <!-- Webcam mode -->
+            <div id="prev-cam-wrap" style="padding:12px;text-align:center">
+              <div style="position:relative;display:inline-block;border-radius:6px;overflow:hidden;background:#1e1e2e">
+                <video id="prev-video" autoplay muted playsinline style="width:100%;max-width:300px;height:180px;object-fit:cover;display:block;border-radius:6px"></video>
+                <canvas id="prev-snap-canvas" style="display:none;width:100%;max-width:300px;height:180px;object-fit:cover;border-radius:6px"></canvas>
+                <div id="prev-cam-overlay" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);border-radius:6px">
+                  <div style="text-align:center;color:#fff">
+                    <div style="font-size:28px;margin-bottom:6px">📷</div>
+                    <div style="font-size:12px" data-i18n="click_start_cam">Click below to start camera</div>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;justify-content:center;margin-top:10px">
+                <button class="prev-act-btn" id="prev-cam-start" onclick="startPrevCam()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+                  <span data-i18n="start_camera">Start Camera</span>
+                </button>
+                <button class="prev-act-btn pri" id="prev-cam-snap" onclick="snapAndPredict()" style="display:none">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="3.2"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+                  <span data-i18n="take_snapshot">Take Snapshot</span>
+                </button>
+                <button class="prev-act-btn" id="prev-cam-stop" onclick="stopPrevCam()" style="display:none">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>
+                  <span data-i18n="btn_stop">Stop</span>
+                </button>
+              </div>
+            </div>
+            <!-- File upload mode -->
+            <div id="prev-file-wrap" style="padding:12px;display:none">
+              <div id="prev-drop-zone" onclick="document.getElementById('prev-file-input').click()"
+                style="border:2px dashed #dadce0;border-radius:8px;padding:28px 16px;text-align:center;cursor:pointer;transition:all .2s"
+                ondragover="event.preventDefault();this.style.borderColor='#1a73e8';this.style.background='#f0f4ff'"
+                ondragleave="this.style.borderColor='#dadce0';this.style.background=''"
+                ondrop="handlePrevDrop(event)">
+                <div style="font-size:28px;margin-bottom:6px">🖼</div>
+                <div style="font-size:13px;color:#5f6368" data-i18n="drop_or_click">Drop image here or click to upload</div>
+                <div style="font-size:11px;color:#9aa0a6;margin-top:4px">PNG, JPG, GIF</div>
+              </div>
+              <input type="file" id="prev-file-input" class="fi" accept="image/*" onchange="handlePrevFile(this)">
+              <div id="prev-file-preview" style="display:none;margin-top:10px;text-align:center">
+                <img id="prev-file-img" style="max-width:100%;max-height:180px;border-radius:6px;border:1px solid #e0e0e0">
+              </div>
+            </div>
+            <!-- Prediction result -->
+            <div id="prev-pred-result" style="display:none;padding:0 12px 12px">
+              <div style="font-size:11px;color:#5f6368;margin-bottom:6px;font-family:'Google Sans',sans-serif;font-weight:500" data-i18n="class_confidence">Output — Class Confidence</div>
+              <div id="prev-conf-bars"></div>
+              <div id="prev-pred-label" style="text-align:center;font-family:'Google Sans',sans-serif;font-size:14px;font-weight:500;color:#202124;padding:8px;background:#f1f3f4;border-radius:6px;margin-top:6px"></div>
+            </div>
+          </div>
+          <!-- ── END LIVE TEST ── -->
+
+          <div style="font-size:11px;color:#5f6368;margin-bottom:8px;font-family:'Google Sans',sans-serif;font-weight:500" data-i18n="class_confidence">Output — Class Confidence</div>
+          <div id="s-conf-bars" style="margin-bottom:14px"></div>
+          <div style="font-size:11px;color:#5f6368;margin-bottom:6px;font-family:'Google Sans',sans-serif;font-weight:500" data-i18n="decision_boundary">Decision Boundary</div>
+          <canvas id="s-boundary-canvas" class="vis" width="400" height="220"></canvas>
+          <div style="font-size:11px;color:#5f6368;margin:10px 0 6px;font-family:'Google Sans',sans-serif;font-weight:500" data-i18n="per_class_perf">Per-Class Performance</div>
+          <table class="acc-table" id="s-cls-table">
+            <thead><tr>
+              <th data-i18n="th_class">Class</th>
+              <th data-i18n="th_precision">Precision</th>
+              <th data-i18n="th_recall">Recall</th>
+              <th data-i18n="th_support">Support</th>
+            </tr></thead>
+            <tbody id="s-cls-tbody"></tbody>
+          </table>
+          <div style="font-size:11px;color:#5f6368;margin:10px 0 6px;font-family:'Google Sans',sans-serif;font-weight:500" data-i18n="loss_curve">Training Loss Curve</div>
+          <canvas id="s-loss-canvas" class="vis" width="400" height="70"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════ WEBCAM MODAL (for class sample capture) ═══════════ -->
+<div id="webcam-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;width:520px;max-width:95vw;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.3)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #e0e0e0">
+      <span style="font-family:'Google Sans',sans-serif;font-size:16px;font-weight:500" id="wm-title">📷 Webcam — Class 1</span>
+      <button onclick="closeWebcam()" style="border:none;background:none;font-size:20px;cursor:pointer;color:#5f6368;line-height:1">✕</button>
+    </div>
+    <div style="padding:16px;text-align:center">
+      <div style="position:relative;display:inline-block;background:#000;border-radius:8px;overflow:hidden">
+        <video id="wm-video" autoplay muted playsinline style="width:400px;max-width:100%;height:260px;object-fit:cover;display:block"></video>
+        <canvas id="wm-flash" style="position:absolute;inset:0;pointer-events:none;opacity:0;background:#fff;transition:opacity .12s"></canvas>
+      </div>
+      <div style="margin-top:10px;font-size:12px;color:#5f6368" id="wm-count-lbl">0 <span data-i18n="samples_taken">samples taken</span></div>
+      <canvas id="wm-hidden-canvas" width="224" height="224" style="display:none"></canvas>
+    </div>
+    <div style="display:flex;gap:10px;padding:0 16px 16px;justify-content:center">
+      <button onclick="wmCapture()" style="display:flex;align-items:center;gap:6px;padding:10px 22px;background:#1a73e8;color:#fff;border:none;border-radius:6px;font-family:'Google Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:background .15s" onmouseover="this.style.background='#1557b0'" onmouseout="this.style.background='#1a73e8'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="3.2"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+        <span id="wm-cap-lbl" data-i18n="capture">Capture</span>
+      </button>
+      <button onclick="wmHoldCapture()" id="wm-hold-btn" style="display:flex;align-items:center;gap:6px;padding:10px 22px;background:#34a853;color:#fff;border:none;border-radius:6px;font-family:'Google Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer">
+        <span data-i18n="hold_to_record">⏺ Hold to Record</span>
+      </button>
+      <button onclick="closeWebcam()" style="padding:10px 22px;background:#f1f3f4;color:#202124;border:none;border-radius:6px;font-family:'Google Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer">
+        <span data-i18n="btn_done">Done</span>
+      </button>
+    </div>
+    <div style="padding:0 16px 16px">
+      <div class="tm-thumbs" id="wm-thumbs" style="justify-content:center"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SHARE MODAL ═══════════ -->
+<div id="share-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;width:440px;max-width:95vw;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.3)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #e0e0e0">
+      <span style="font-family:'Google Sans',sans-serif;font-size:16px;font-weight:500" data-i18n="share_title">🔗 Taslamy Paýlaş</span>
+      <button onclick="closeShareModal()" style="border:none;background:none;font-size:20px;cursor:pointer;color:#5f6368;line-height:1">✕</button>
+    </div>
+    <div style="padding:20px">
+      <div style="margin-bottom:16px">
+        <div style="font-size:12px;color:#5f6368;margin-bottom:6px;font-family:'Google Sans',sans-serif;font-weight:500" data-i18n="share_link">Paýlaşma Salgysy</div>
+        <div style="display:flex;gap:8px">
+          <input id="share-url-inp" readonly style="flex:1;padding:8px 12px;border:1px solid #dadce0;border-radius:6px;font-size:13px;background:#f8f9fa;color:#202124" value="">
+          <button onclick="copyShareUrl()" style="padding:8px 14px;background:#1a73e8;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:500;font-family:'Google Sans',sans-serif;cursor:pointer" data-i18n="btn_copy">Copy</button>
+        </div>
+      </div>
+      <div style="margin-bottom:16px">
+        <div style="font-size:12px;color:#5f6368;margin-bottom:8px;font-family:'Google Sans',sans-serif;font-weight:500" data-i18n="share_via">Şeýle hem paýlaş:</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button onclick="shareVia('telegram')" style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:#0088cc;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer">✈ Telegram</button>
+          <button onclick="shareVia('whatsapp')" style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:#25d366;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer">💬 WhatsApp</button>
+          <button onclick="shareVia('email')" style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:#ea4335;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer">✉ Email</button>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px;color:#5f6368;margin-bottom:6px;font-family:'Google Sans',sans-serif;font-weight:500" data-i18n="export_json">Modeli JSON görnüşinde eksport et:</div>
+        <button onclick="downloadModelJson()" style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:#f1f3f4;color:#202124;border:1px solid #dadce0;border-radius:6px;font-size:12px;font-weight:500;font-family:'Google Sans',sans-serif;cursor:pointer">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          <span data-i18n="download_json">model.json Ýükle</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ UNSUPERVISED ═══════════════════════ -->
+<div class="page" id="page-uns">
+<div class="layout">
+  <div class="col-l">
+    <div class="chip chip-g">🔍 <span data-i18n="chip_clustering">Clustering · Unsupervised</span></div>
+    <div class="card">
+      <div class="card-hd"><span class="card-title" data-i18n="data_source">Data Source</span></div>
+      <div class="card-bd">
+        <div class="sel-lbl" data-i18n="gen_or_upload">Generate or upload a dataset:</div>
+        <div class="sbtns">
+          <button class="sbtn g" onclick="generateUnsupervised()">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+            <span data-i18n="btn_generate">Generate</span>
+          </button>
+          <!-- <button class="sbtn g" onclick="document.getElementById('u-file').click()">
+            <svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+            <span data-i18n="btn_upload_csv">Upload CSV</span>
+          </button> -->
+        </div>
+        <input type="file" class="fi" id="u-file" accept=".csv,.json" onchange="toast(T('csv_loaded'))">
+        <div id="u-data-info" style="font-size:12px;color:#5f6368;margin-top:8px;display:none"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><span class="card-title" data-i18n="configuration">Configuration</span></div>
+      <div class="card-bd">
+        <div class="cfg">
+          <div class="cfg-row">
+            <span data-i18n="algorithm">Algorithm</span>
+            <select class="cfg-sel" id="u-algo">
+              <option value="kmeans">K-Means</option>
+              <option value="dbscan">DBSCAN</option>
+              <option value="hierarchical" data-i18n="algo_hier">Hierarchical</option>
+              <option value="gmm">Gaussian Mixture</option>
+            </select>
+          </div>
+          <div class="cfg-row">
+            <span data-i18n="clusters_k">Clusters (k)</span>
+            <div style="display:flex;align-items:center;gap:5px">
+              <button onclick="adj('u-k',-1)" style="width:22px;height:22px;border:1px solid #dadce0;border-radius:3px;background:#fff;cursor:pointer;font-size:13px">−</button>
+              <input class="cfg-inp" id="u-k" value="3" type="number" min="2" max="10" style="width:44px">
+              <button onclick="adj('u-k',1)" style="width:22px;height:22px;border:1px solid #dadce0;border-radius:3px;background:#fff;cursor:pointer;font-size:13px">+</button>
+            </div>
+          </div>
+          <div class="cfg-row">
+            <span data-i18n="sample_count">Sample Count</span>
+            <input class="cfg-inp" id="u-nsamp" type="number" value="300" min="50" max="800" step="50">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card" id="u-data-card" style="display:none">
+      <div class="card-hd"><span class="card-title" data-i18n="raw_data">Raw Data Preview</span><span id="u-pt-count" style="font-size:12px;color:#5f6368"></span></div>
+      <div class="card-bd">
+        <canvas id="u-raw-canvas" width="300" height="200" style="width:100%;border-radius:4px;border:1px solid #e0e0e0"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="conn"><svg viewBox="0 0 68 44" fill="none"><path d="M0 22H68" stroke="#dadce0" stroke-width="1.5"/><circle cx="3" cy="22" r="3" fill="#dadce0"/><circle cx="65" cy="22" r="3" fill="#dadce0"/></svg></div>
+
+  <div class="col-m">
+    <div class="card train-card">
+      <div class="tp-title" data-i18n="clustering">Clustering</div>
+      <button class="train-btn ready-g" id="u-tbtn" onclick="runClustering()" data-i18n="btn_run_clustering">Run Clustering</button>
+      <div class="prog" id="u-prog">
+        <div class="prog-hd"><span id="u-ep-txt">Iteration 0</span><span id="u-loss-txt">Inertia: —</span></div>
+        <div class="prog-track"><div class="prog-fill" id="u-pfill" style="background:#1e8e3e"></div></div>
+        <div class="prog-info" id="u-pinfo" data-i18n="initializing">Initializing...</div>
+      </div>
+      <div class="adv-row" onclick="toggleAdv('u-adv','u-chev')">
+        <span class="adv-lbl" data-i18n="advanced">Advanced</span><span class="chev" id="u-chev">›</span>
+      </div>
+      <div class="adv-body" id="u-adv">
+        <div class="adv-f"><span data-i18n="init_method">Init Method</span>
+          <select style="width:80px;padding:3px;border:1px solid #dadce0;border-radius:4px;font-size:11px">
+            <option>k-means++</option><option>random</option>
+          </select>
+        </div>
+        <div class="adv-f"><span data-i18n="random_seed">Random Seed</span><input class="adv-inp" value="42" type="number"></div>
+        <div class="adv-f"><span data-i18n="tolerance">Tolerance</span><input class="adv-inp" value="1e-4" type="text"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="conn"><svg viewBox="0 0 68 44" fill="none"><path d="M0 22H68" stroke="#dadce0" stroke-width="1.5"/><circle cx="3" cy="22" r="3" fill="#dadce0"/><circle cx="65" cy="22" r="3" fill="#dadce0"/></svg></div>
+
+  <div class="col-r">
+    <div class="card">
+      <div class="prev-hd">
+        <span class="prev-title" data-i18n="results">Results</span>
+        <button class="exp-btn" id="u-expbtn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+          <span data-i18n="export_results">Export Results</span>
+        </button>
+      </div>
+      <div class="prev-body">
+        <div class="no-msg" id="u-nomsg" data-i18n="run_to_see">Run clustering to see results here.</div>
+        <div id="u-results" style="display:none">
+          <canvas id="u-result-canvas" class="vis" width="400" height="260"></canvas>
+          <div class="cl-badges" id="u-badges"></div>
+          <div class="stat-grid">
+            <div class="stat-box"><div class="stat-lbl" data-i18n="stat_clusters">Clusters</div><div class="stat-val" id="u-nclust">—</div></div>
+            <div class="stat-box"><div class="stat-lbl" data-i18n="stat_inertia">Inertia</div><div class="stat-val" id="u-inertia">—</div></div>
+            <div class="stat-box"><div class="stat-lbl" data-i18n="stat_silhouette">Silhouette</div><div class="stat-val" id="u-sil">—</div></div>
+          </div>
+          <div style="font-size:11px;color:#5f6368;margin-bottom:6px;font-family:'Google Sans',sans-serif;font-weight:500" data-i18n="inertia_convergence">Inertia Convergence</div>
+          <canvas id="u-iter-canvas" class="vis" width="400" height="80"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════ REINFORCEMENT ═══════════════════════ -->
+<div class="page" id="page-rl">
+<div class="layout">
+  <div class="col-l">
+    <div class="chip chip-o">🎮 <span data-i18n="chip_rl">Grid World · Reinforcement Learning</span></div>
+    <div class="card">
+      <div class="card-hd">
+        <span class="card-title" data-i18n="environment">Environment</span>
+        <button class="rl-btn" onclick="resetEnv()" style="padding:5px 10px;font-size:11px" data-i18n="btn_reset">↺ Reset</button>
+      </div>
+      <div class="card-bd">
+        <div class="sel-lbl" style="margin-bottom:10px" data-i18n="click_cells">Click cells to toggle walls / danger:</div>
+        <div class="env-wrap"><div class="rl-grid-el" id="rl-grid-el" style="grid-template-columns:repeat(5,42px)"></div></div>
+        <div style="display:flex;gap:14px;font-size:11px;color:#5f6368;flex-wrap:wrap">
+          <span>🤖 <span data-i18n="legend_agent">Agent</span></span>
+          <span>🎯 <span data-i18n="legend_goal">Goal</span></span>
+          <span>⬛ <span data-i18n="legend_wall">Wall</span></span>
+          <span>💀 <span data-i18n="legend_danger">Danger</span></span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><span class="card-title" data-i18n="hyperparameters">Hyperparameters</span></div>
+      <div class="card-bd">
+        <div class="cfg">
+          <div class="cfg-row">
+            <span data-i18n="algorithm">Algorithm</span>
+            <select class="cfg-sel" id="rl-algo">
+              <option>Q-Learning</option>
+              <option>SARSA</option>
+              <option>Double DQN</option>
+            </select>
+          </div>
+          <div class="cfg-row"><span data-i18n="learning_rate">Learning Rate (α)</span><input class="cfg-inp" id="rl-alpha" value="0.1" type="number" step="0.01" min="0.001" max="1"></div>
+          <div class="cfg-row"><span data-i18n="discount">Discount (γ)</span><input class="cfg-inp" id="rl-gamma" value="0.95" type="number" step="0.01" min="0" max="1"></div>
+          <div class="cfg-row"><span data-i18n="exploration">Exploration (ε)</span><input class="cfg-inp" id="rl-eps" value="0.9" type="number" step="0.01" min="0" max="1"></div>
+          <div class="cfg-row"><span data-i18n="episodes">Episodes</span><input class="cfg-inp" id="rl-episodes" value="300" type="number" min="50" max="2000"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="conn"><svg viewBox="0 0 68 44" fill="none"><path d="M0 22H68" stroke="#dadce0" stroke-width="1.5"/><circle cx="3" cy="22" r="3" fill="#dadce0"/><circle cx="65" cy="22" r="3" fill="#dadce0"/></svg></div>
+
+  <div class="col-m">
+    <div class="card train-card">
+      <div class="tp-title" data-i18n="training">Training</div>
+      <button class="train-btn ready-o" id="rl-tbtn" onclick="trainRL()" data-i18n="btn_train_agent">Train Agent</button>
+      <div class="prog" id="rl-prog">
+        <div class="prog-hd"><span id="rl-ep-txt">Episode 0/300</span><span id="rl-eps-txt">ε: 0.90</span></div>
+        <div class="prog-track"><div class="prog-fill" id="rl-pfill" style="background:#e37400"></div></div>
+        <div class="prog-info" id="rl-pinfo" data-i18n="exploring">Exploring...</div>
+      </div>
+      <div class="adv-row" onclick="toggleAdv('rl-adv','rl-chev')">
+        <span class="adv-lbl" data-i18n="advanced">Advanced</span><span class="chev" id="rl-chev">›</span>
+      </div>
+      <div class="adv-body" id="rl-adv">
+        <div class="adv-f"><span data-i18n="eps_decay">ε Decay</span><input class="adv-inp" value="0.995" type="number" step="0.001"></div>
+        <div class="adv-f"><span data-i18n="eps_min">ε Min</span><input class="adv-inp" value="0.05" type="number" step="0.01"></div>
+        <div class="adv-f"><span data-i18n="max_steps">Max Steps</span><input class="adv-inp" value="200" type="number"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="conn"><svg viewBox="0 0 68 44" fill="none"><path d="M0 22H68" stroke="#dadce0" stroke-width="1.5"/><circle cx="3" cy="22" r="3" fill="#dadce0"/><circle cx="65" cy="22" r="3" fill="#dadce0"/></svg></div>
+
+  <div class="col-r">
+    <div class="card">
+      <div class="prev-hd">
+        <span class="prev-title" data-i18n="agent_preview">Agent Preview</span>
+        <button class="exp-btn" id="rl-expbtn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+          <span data-i18n="export_policy">Export Policy</span>
+        </button>
+      </div>
+      <div class="prev-body">
+        <div class="no-msg" id="rl-nomsg" data-i18n="train_agent_first">Train the agent to see the learned policy.</div>
+        <div id="rl-results" style="display:none">
+          <div class="stat-grid-2">
+            <div class="stat-box"><div class="stat-lbl" data-i18n="stat_episodes">Episodes</div><div class="stat-val" id="rl-ep-val">—</div></div>
+            <div class="stat-box"><div class="stat-lbl" data-i18n="stat_success">Success Rate</div><div class="stat-val" id="rl-suc-val">—</div></div>
+            <div class="stat-box"><div class="stat-lbl" data-i18n="stat_avg_steps">Avg Steps</div><div class="stat-val" id="rl-step-val">—</div></div>
+            <div class="stat-box"><div class="stat-lbl" data-i18n="stat_best_reward">Best Reward</div><div class="stat-val" id="rl-rew-val">—</div></div>
+          </div>
+          <div class="chart-wrap">
+            <div class="chart-lbl" data-i18n="reward_per_ep">Reward per Episode (smoothed)</div>
+            <canvas id="rl-reward-canvas" width="400" height="80" style="width:100%"></canvas>
+          </div>
+          <div style="font-size:11px;color:#5f6368;margin-bottom:8px;font-family:'Google Sans',sans-serif;font-weight:500" data-i18n="learned_policy">Learned Policy</div>
+          <div style="display:flex;justify-content:center;margin-bottom:12px">
+            <div class="policy-grid-el" id="rl-policy-el" style="grid-template-columns:repeat(5,42px)"></div>
+          </div>
+          <div class="rl-btns">
+            <button class="rl-btn pri" onclick="runAgent()" data-i18n="btn_run_agent">▶ Run Agent</button>
+            <button class="rl-btn" onclick="stopAgent()" data-i18n="btn_stop">⏹ Stop</button>
+            <button class="rl-btn dan" onclick="resetRL()" data-i18n="btn_reset">↺ Reset</button>
+          </div>
+          <div class="ep-log" id="rl-log"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- BOTTOM -->
+<div class="btm">
+  <div class="btm-left">
+    <button class="btm-langbtn" onclick="setLang('tm')">🇹🇲 Türkmençe</button>
+    <span style="color:#e0e0e0">|</span>
+    <button class="btm-langbtn" onclick="setLang('en')">🌐 English</button>
+  </div>
+  <span style="color:#9aa0a6">release-2-4-12 · 2.4.12#5704f5</span>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  i18n — Bilingual dictionary
+// ═══════════════════════════════════════════════════════
+const LANG = {
+  en: {
+    // nav
+    tab_supervised: "Supervised",
+    tab_unsupervised: "Unsupervised",
+    tab_rl: "Reinforcement",
+    btn_upload: "⬆ Upload",
+    btn_share: "Share",
+    nav_proj: "My ML Project",
+    // supervised
+    training: "Training",
+    algorithm: "Algorithm",
+    algo_knn: "K-Nearest Neighbors",
+    algo_tree: "Decision Tree",
+    algo_logistic: "Logistic Regression",
+    algo_svm: "SVM (RBF)",
+    btn_train_model: "Train Model",
+    preparing: "Preparing...",
+    advanced: "Advanced",
+    epochs: "Epochs",
+    samples_per_class: "Samples / Class",
+    classes: "Classes",
+    preview: "Preview",
+    export_model: "Export Model",
+    train_first: "You must train a model on the left\nbefore you can preview it here.",
+    class_confidence: "Output — Class Confidence",
+    decision_boundary: "Decision Boundary",
+    per_class_perf: "Per-Class Performance",
+    loss_curve: "Training Loss Curve",
+    th_class: "Class", th_precision: "Precision", th_recall: "Recall", th_support: "Support",
+    btn_retrain_model: "Retrain Model",
+    add_samples: "Add Image Samples:",
+    btn_webcam: "Webcam",
+    btn_upload_solo: "Upload",
+    btn_add_class: "Add a class",
+    menu_rename: "✏️ Rename class",
+    menu_remove: "🗑 Remove class",
+    webcam_alert: "Connect a webcam to capture samples",
+    live_test: "🔬 Live Test",
+    click_start_cam: "Click below to start camera",
+    start_camera: "Start Camera",
+    take_snapshot: "Take Snapshot",
+    drop_or_click: "Drop image here or click to upload",
+    samples_taken: "samples taken",
+    capture: "Capture",
+    hold_to_record: "⏺ Hold to Record",
+    btn_done: "Done",
+    share_title: "🔗 Share Project",
+    share_link: "Share Link",
+    share_via: "Also share via:",
+    export_json: "Export model as JSON:",
+    download_json: "Download model.json",
+    btn_copy: "Copy",
+    copied: "✓ Copied!",
+    predict_label: (cls, pct) => `✅ Predicted: ${cls} (${pct}%)`,
+    // unsupervised
+    chip_clustering: "Clustering · Unsupervised",
+    data_source: "Data Source",
+    gen_or_upload: "Generate or upload a dataset:",
+    btn_generate: "Generate",
+    btn_upload_csv: "Upload CSV",
+    csv_loaded: "CSV loaded (demo mode)",
+    configuration: "Configuration",
+    clusters_k: "Clusters (k)",
+    sample_count: "Sample Count",
+    raw_data: "Raw Data Preview",
+    clustering: "Clustering",
+    btn_run_clustering: "Run Clustering",
+    initializing: "Initializing...",
+    init_method: "Init Method",
+    random_seed: "Random Seed",
+    tolerance: "Tolerance",
+    results: "Results",
+    export_results: "Export Results",
+    run_to_see: "Run clustering to see results here.",
+    stat_clusters: "Clusters", stat_inertia: "Inertia", stat_silhouette: "Silhouette",
+    inertia_convergence: "Inertia Convergence",
+    algo_hier: "Hierarchical",
+    // RL
+    chip_rl: "Grid World · Reinforcement Learning",
+    environment: "Environment",
+    btn_reset: "↺ Reset",
+    click_cells: "Click cells to toggle walls / danger:",
+    legend_agent: "Agent", legend_goal: "Goal", legend_wall: "Wall", legend_danger: "Danger",
+    hyperparameters: "Hyperparameters",
+    learning_rate: "Learning Rate (α)",
+    discount: "Discount (γ)",
+    exploration: "Exploration (ε)",
+    episodes: "Episodes",
+    btn_train_agent: "Train Agent",
+    exploring: "Exploring...",
+    eps_decay: "ε Decay", eps_min: "ε Min", max_steps: "Max Steps",
+    agent_preview: "Agent Preview",
+    export_policy: "Export Policy",
+    train_agent_first: "Train the agent to see the learned policy.",
+    stat_episodes: "Episodes", stat_success: "Success Rate",
+    stat_avg_steps: "Avg Steps", stat_best_reward: "Best Reward",
+    reward_per_ep: "Reward per Episode (smoothed)",
+    learned_policy: "Learned Policy",
+    btn_run_agent: "▶ Run Agent",
+    btn_stop: "⏹ Stop",
+    // misc
+    generating: "Generating dataset...",
+    points_generated: (n) => `✓ ${n} points generated`,
+    error_prefix: "Error: ",
+    training_done: "Done!",
+    train_done_log: (s,t,r) => `Training done. Success: ${s}/${t} (${r}%)`,
+    agent_started: "Agent started...",
+    reached_goal: (n) => `Reached goal in ${n} steps! 🎉`,
+    stopped_after: (n) => `Stopped after ${n} steps.`,
+    stopped: "Stopped.",
+    env_reset: "Environment reset.",
+    train_first_toast: "Generate data first!",
+    train_agent_toast: "Train the agent first!",
+    img_samples: (n) => `${n} image sample${n!==1?'s':''}`,
+    pts_label: "pts",
+    data_points_loaded: (n) => `${n} data points loaded`,
+    // progress phases supervised
+    ph_loading: "Loading data...",
+    ph_feature: "Feature extraction...",
+    ph_fitting: "Fitting model...",
+    ph_eval: "Evaluating...",
+    ph_done: "Done!",
+    // clustering phases
+    ph_init: "Initializing centroids...",
+    ph_assign: "Assigning points...",
+    ph_update: "Updating centroids...",
+    ph_converge: "Converging...",
+    // RL phases
+    ph_explore: "Exploring randomly...",
+    ph_learn: "Learning Q-values...",
+    ph_exploit: "Exploiting policy...",
+    ph_refine: "Refining...",
+    ph_train_done: "Training complete!",
+  },
+  tm: {
+    // nav
+    tab_supervised: "Gözegçilikli",
+    tab_unsupervised: "Gözegçiliksiz",
+    tab_rl: "Güýçlendirme",
+    btn_upload: "⬆ Ýükle",
+    btn_share: "Paýlaş",
+    nav_proj: "Meniň ML Taslamam",
+    // supervised
+    training: "Türgenleşdirmek",
+    algorithm: "Algoritm",
+    algo_knn: "K-Iň Ýakyn Goňşular",
+    algo_tree: "Karar Agajy",
+    algo_logistic: "Logistiki Regresyon",
+    algo_svm: "SVM (RBF)",
+    btn_train_model: "Modeli Türgenleşdir",
+    preparing: "Taýýarlanýar...",
+    advanced: "Giňeldilen",
+    epochs: "Epoha",
+    samples_per_class: "Nusga / Klass",
+    classes: "Klaslar",
+    preview: "Öňünden Görmek",
+    export_model: "Modeli Eksport Et",
+    train_first: "Öňünden görmek üçin\nçepde modeli türgenleşdirmeli.",
+    class_confidence: "Çykyş — Klass Ynamy",
+    decision_boundary: "Karar Serhet",
+    per_class_perf: "Klass Görkezijisi",
+    loss_curve: "Ýitgi Egri Çyzy",
+    th_class: "Klass", th_precision: "Takyklyk", th_recall: "Ýatlatma", th_support: "Goldaw",
+    btn_retrain_model: "Gaýtadan Türgenleşdir",
+    add_samples: "Surat Nusgalaryny Goş:",
+    btn_webcam: "Kamera",
+    btn_upload_solo: "Ýükle",
+    btn_add_class: "Klass goş",
+    menu_rename: "✏️ Klasy täzeden at ber",
+    menu_remove: "🗑 Klasy aýyr",
+    webcam_alert: "Nusga almak üçin kamera birikdir",
+    live_test: "🔬 Janly Synag",
+    click_start_cam: "Kamera başlatmak üçin aşakdaky düwmä basyň",
+    start_camera: "Kamerany Başlat",
+    take_snapshot: "Surat Al",
+    drop_or_click: "Suraty goýuň ýa-da ýüklemek üçin basyň",
+    samples_taken: "nusga alyndy",
+    capture: "Tut",
+    hold_to_record: "⏺ Tutup Ýaz",
+    btn_done: "Taýýar",
+    share_title: "🔗 Taslamy Paýlaş",
+    share_link: "Paýlaşma Salgysy",
+    share_via: "Şeýle hem paýlaş:",
+    export_json: "Modeli JSON görnüşinde eksport et:",
+    download_json: "model.json Ýükle",
+    btn_copy: "Göçür",
+    copied: "✓ Göçürildi!",
+    predict_label: (cls, pct) => `✅ Çaklama: ${cls} (${pct}%)`,
+    // unsupervised
+    chip_clustering: "Klasterleşdirme · Gözegçiliksiz",
+    data_source: "Maglumatlaryň Çeşmesi",
+    gen_or_upload: "Dataset dör ýa ýükle:",
+    btn_generate: "Dörediň",
+    btn_upload_csv: "CSV Ýükle",
+    csv_loaded: "CSV ýüklendi (demo düzgüni)",
+    configuration: "Sazlama",
+    clusters_k: "Klasterler (k)",
+    sample_count: "Nusga Sany",
+    raw_data: "Çig Maglumatlary Görmek",
+    clustering: "Klasterleşdirmek",
+    btn_run_clustering: "Klasterleşdirmegi Işlet",
+    initializing: "Başlanýar...",
+    init_method: "Başlama Usuly",
+    random_seed: "Tötänleýin Tohum",
+    tolerance: "Çydamlylyk",
+    results: "Netijeler",
+    export_results: "Netijeleri Eksport Et",
+    run_to_see: "Netijeleri görmek üçin klasterleşdirme işlediň.",
+    stat_clusters: "Klaster", stat_inertia: "Inertia", stat_silhouette: "Siluet",
+    inertia_convergence: "Inertia Konwergensiýa",
+    algo_hier: "Hierarchiki",
+    // RL
+    chip_rl: "Grid Dünýä · Güýçlendirme Öwrenmesi",
+    environment: "Gurşaw",
+    btn_reset: "↺ Täzele",
+    click_cells: "Diwar / howp üçin öýjüklere bakyň:",
+    legend_agent: "Agent", legend_goal: "Maksat", legend_wall: "Diwar", legend_danger: "Howp",
+    hyperparameters: "Giperparam",
+    learning_rate: "Öwreniş Tizligi (α)",
+    discount: "Arzanladyş (γ)",
+    exploration: "Gözleg (ε)",
+    episodes: "Epizodlar",
+    btn_train_agent: "Agenti Türgenleşdir",
+    exploring: "Gözlenýär...",
+    eps_decay: "ε Azalma", eps_min: "ε Min", max_steps: "Maks Ädim",
+    agent_preview: "Agent Öňünden Görmek",
+    export_policy: "Syýasaty Eksport Et",
+    train_agent_first: "Öwrenilen syýasaty görmek üçin agenti türgenleşdir.",
+    stat_episodes: "Epizodlar", stat_success: "Üstünlik Derejesi",
+    stat_avg_steps: "Ort. Ädimler", stat_best_reward: "Iň Ýokary Sylag",
+    reward_per_ep: "Epizod Başyna Sylag (tekizlenen)",
+    learned_policy: "Öwrenilen Syýasat",
+    btn_run_agent: "▶ Agenti Işlet",
+    btn_stop: "⏹ Dur",
+    btn_reset_2: "↺ Täzele",
+    // misc
+    generating: "Dataset döredilýär...",
+    points_generated: (n) => `✓ ${n} nokady döredildi`,
+    error_prefix: "Ýalňyşlyk: ",
+    training_done: "Taýýar!",
+    train_done_log: (s,t,r) => `Türgenleşme gutardy. Üstünlik: ${s}/${t} (${r}%)`,
+    agent_started: "Agent başlady...",
+    reached_goal: (n) => `${n} ädimde maksada ýetildi! 🎉`,
+    stopped_after: (n) => `${n} ädimden soň duruldy.`,
+    stopped: "Duruldy.",
+    env_reset: "Gurşaw täzelendi.",
+    train_first_toast: "Ilki data dörediň!",
+    train_agent_toast: "Ilki agenti türgenleşdiriň!",
+    img_samples: (n) => `${n} surat nusgasy`,
+    pts_label: "nokady",
+    data_points_loaded: (n) => `${n} maglumat nokady ýüklendi`,
+    // progress phases supervised
+    ph_loading: "Maglumatlar ýüklenýär...",
+    ph_feature: "Aýratynlyklar alynýar...",
+    ph_fitting: "Model oturdylýar...",
+    ph_eval: "Bahalandyrylýar...",
+    ph_done: "Taýýar!",
+    // clustering phases
+    ph_init: "Sentroidler başlanýar...",
+    ph_assign: "Nokadlar belleniýär...",
+    ph_update: "Sentroidler täzelenýär...",
+    ph_converge: "Konwergirlenýär...",
+    // RL phases
+    ph_explore: "Tötänleýin gözlenýär...",
+    ph_learn: "Q-bahalar öwrenilýär...",
+    ph_exploit: "Syýasat ulanylýar...",
+    ph_refine: "Kämilleşdirilýär...",
+    ph_train_done: "Türgenleşme gutardy!",
+  }
+};
+
+let currentLang = 'tm';
+
+// Translation helper
+function T(key) {
+  const d = LANG[currentLang];
+  return (d && d[key]) ? d[key] : (LANG.en[key] || key);
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('ml_lang', lang);
+
+  // update toggle buttons
+  document.getElementById('btn-en').classList.toggle('active', lang==='en');
+  document.getElementById('btn-tm').classList.toggle('active', lang==='tm');
+
+  // translate all data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const val = LANG[lang][key] || LANG.en[key];
+    if (!val) return;
+    // handle functions
+    if (typeof val === 'function') return;
+    // for inputs, update placeholder
+    if (el.tagName === 'INPUT') { el.placeholder = val; return; }
+    // for options
+    if (el.tagName === 'OPTION') { el.textContent = val; return; }
+    // for elements that contain innerHTML (no-msg uses <br>)
+    if (key === 'train_first' || key === 'train_first_tmb') {
+      el.innerHTML = val.replace('\n','<br>');
+      return;
+    }
+    el.textContent = val;
+  });
+
+  // update nav project placeholder
+  // update bottom lang buttons highlight
+}
+
+// ── NAV
+function switchPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.ntab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  el.classList.add('active');
+}
+
+function toast(msg) {
+  document.querySelectorAll('.toast').forEach(t => t.remove());
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2600);
+}
+
+function toggleAdv(cid, chid) {
+  document.getElementById(cid).classList.toggle('open');
+  document.getElementById(chid).classList.toggle('open');
+}
+
+function adj(id, delta) {
+  const el = document.getElementById(id);
+  const v  = parseInt(el.value) + delta;
+  if (v >= parseInt(el.min||1) && v <= parseInt(el.max||999)) el.value = v;
+}
+
+// ── API HELPERS
+async function api(path, body) {
+  const res = await fetch(path, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+function setBtn(id, cls, text) {
+  const b = document.getElementById(id);
+  b.className = 'train-btn ' + cls;
+  b.innerHTML = text;
+  b.disabled  = cls.includes('running');
+}
+
+function animateProgress(progId, fillId, epTxtId, lossTxtId, infoId, total, color, phases, onDone) {
+  const prog = document.getElementById(progId);
+  prog.classList.add('on');
+  let i = 0;
+  const iv = setInterval(() => {
+    i++;
+    const pct = i / total;
+    document.getElementById(fillId).style.width = (pct*100)+'%';
+    const loss = Math.max(0.01, 1.2 - pct*1.1 + (Math.random()-.5)*.04);
+    document.getElementById(epTxtId).textContent = `Step ${i}/${total}`;
+    document.getElementById(lossTxtId).textContent = `${loss.toFixed(4)}`;
+    for (const [t,msg] of phases) {
+      if (pct <= t) { document.getElementById(infoId).textContent = msg; break; }
+    }
+    if (i >= total) { clearInterval(iv); onDone(); }
+  }, 40);
+}
+
+// ── CANVAS HELPERS
+function drawScatter(canvasId, points, colors, size=4) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  canvas.style.display = 'block';
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#fafafa'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  const W = canvas.width, H = canvas.height;
+  const xs = points.map(p=>p.x), ys = points.map(p=>p.y);
+  const xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys);
+  const toX = x => (x-xmin)/(xmax-xmin||1)*(W-20)+10;
+  const toY = y => H-10-(y-ymin)/(ymax-ymin||1)*(H-20);
+  points.forEach(p => {
+    const c = colors[p.label !== undefined ? p.label : (p.cluster||0)];
+    ctx.beginPath();
+    ctx.arc(toX(p.x), toY(p.y), size, 0, Math.PI*2);
+    ctx.fillStyle = c+'99'; ctx.fill();
+    ctx.strokeStyle = c; ctx.lineWidth = 1; ctx.stroke();
+  });
+}
+
+function drawLineChart(canvasId, data, color, fill=true) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  canvas.style.display = 'block';
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
+  const min = Math.min(...data), max = Math.max(...data);
+  const range = max-min || 1;
+  const toX = i => (i/(data.length-1))*W;
+  const toY = v => H-4-((v-min)/range)*(H-8);
+  if (fill) {
+    const grad = ctx.createLinearGradient(0,0,0,H);
+    grad.addColorStop(0, color+'44'); grad.addColorStop(1, color+'00');
+    ctx.beginPath(); ctx.moveTo(toX(0),H);
+    data.forEach((v,i) => ctx.lineTo(toX(i),toY(v)));
+    ctx.lineTo(toX(data.length-1),H); ctx.closePath();
+    ctx.fillStyle=grad; ctx.fill();
+  }
+  ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=2;
+  data.forEach((v,i) => i===0?ctx.moveTo(toX(i),toY(v)):ctx.lineTo(toX(i),toY(v)));
+  ctx.stroke();
+}
+
+const COLORS = ['#1a73e8','#ea4335','#34a853','#fbbc04','#9c27b0','#ff6d00','#00bcd4'];
+
+// ════════════════════════════════════════════════════════
+//  SUPERVISED — TM style
+// ════════════════════════════════════════════════════════
+let sClassCount = 2;
+let sSamples    = {0:[], 1:[]};
+let sPoints     = [];
+const S_COLORS  = ['#1a73e8','#ea4335','#34a853','#fbbc04','#9c27b0','#ff6d00'];
+
+function toggleKebab2(id) {
+  const m = document.getElementById(id);
+  const was = m.classList.contains('open');
+  document.querySelectorAll('.tm-kmenu').forEach(x=>x.classList.remove('open'));
+  if(!was) m.classList.add('open');
+}
+function closeKebab2(id){ document.getElementById(id).classList.remove('open'); }
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.tm-kebab'))
+    document.querySelectorAll('.tm-kmenu').forEach(m=>m.classList.remove('open'));
+});
+
+function focusCName(id){ const el=document.getElementById(id); if(el){el.focus();el.select();} }
+function triggerSUpload(idx){ document.getElementById('sfile-'+idx).click(); }
+
+function handleSUpload(idx, input){
+  sSamples[idx] = sSamples[idx]||[];
+  Array.from(input.files).forEach(f=> sSamples[idx].push(URL.createObjectURL(f)));
+  renderSThumbs(idx);
+  input.value='';
+}
+
+function renderSThumbs(idx){
+  const wrap  = document.getElementById('sthumbs-'+idx);
+  const count = document.getElementById('sscount-'+idx);
+  if(!wrap) return;
+  const list = sSamples[idx]||[];
+  wrap.innerHTML='';
+  list.slice(0,8).forEach(url=>{
+    const img=document.createElement('img');
+    img.src=url; img.className='tm-thumb'; wrap.appendChild(img);
+  });
+  if(list.length>8){
+    const m=document.createElement('div');
+    m.className='tm-more'; m.textContent='+' +(list.length-8); wrap.appendChild(m);
+  }
+  if(count){
+    count.className='tm-scount';
+    count.textContent = list.length ? T('img_samples')(list.length) : '';
+  }
+}
+
+function deleteSClass(cardId, idx){
+  const el=document.getElementById(cardId);
+  if(!el) return;
+  el.style.transition='all .2s'; el.style.opacity='0'; el.style.transform='scale(.97)';
+  setTimeout(()=>el.remove(), 200);
+  delete sSamples[idx];
+}
+
+function addSClass(){
+  const idx=sClassCount++;
+  sSamples[idx]=[];
+  const card=document.createElement('div');
+  card.className='tm-class-card'; card.id='scc-'+idx;
+  const classLabel = currentLang==='tm' ? `Klass ${idx+1}` : `Class ${idx+1}`;
+  const renameLabel = T('menu_rename');
+  const removeLabel = T('menu_remove');
+  const samplesLabel = T('add_samples');
+  const webcamLabel = T('btn_webcam');
+  const uploadLabel = T('btn_upload_solo');
+  card.innerHTML=`
+    <div class="tm-class-hd">
+      <div style="display:flex;align-items:center;gap:8px">
+        <input class="tm-class-name" id="scname-${idx}" value="${classLabel}" maxlength="30">
+        <span class="tm-edit-ico" onclick="focusCName('scname-${idx}')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#9aa0a6"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+        </span>
+      </div>
+      <div class="tm-kebab" onclick="toggleKebab2('sckb-${idx}')">⋮
+        <div class="tm-kmenu" id="sckb-${idx}">
+          <div class="tm-kitem" onclick="focusCName('scname-${idx}');closeKebab2('sckb-${idx}')">${renameLabel}</div>
+          <div class="tm-kitem danger" onclick="deleteSClass('scc-${idx}',${idx})">${removeLabel}</div>
+        </div>
+      </div>
+    </div>
+    <div class="tm-class-bd">
+      <div class="tm-samples-lbl">${samplesLabel}</div>
+      <div style="display:flex;gap:10px">
+        <button class="tm-sbtn" onclick="alert(T('webcam_alert'))">
+          <svg viewBox="0 0 24 24" fill="#1a73e8" width="22" height="22"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+          ${webcamLabel}
+        </button>
+        <button class="tm-sbtn" onclick="triggerSUpload(${idx})">
+          <svg viewBox="0 0 24 24" fill="#1a73e8" width="22" height="22"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+          ${uploadLabel}
+        </button>
+      </div>
+      <input type="file" class="fi" id="sfile-${idx}" multiple accept="image/*" onchange="handleSUpload(${idx},this)">
+      <div class="tm-thumbs" id="sthumbs-${idx}"></div>
+      <div class="tm-scount" id="sscount-${idx}"></div>
+    </div>`;
+  document.querySelector('.tm-add-class').before(card);
+  card.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function getSClassNames(){
+  return Array.from(document.querySelectorAll('.tm-class-name')).map(i=>i.value||'Class');
+}
+
+async function trainSupervised(){
+  const btn = document.getElementById('s-tbtn');
+  const nClass = Math.max(2, document.querySelectorAll('.tm-class-card').length);
+  const nSamp  = parseInt(document.getElementById('s-nsamp').value)||100;
+  const epochs = parseInt(document.getElementById('s-epochs').value)||50;
+  const algo   = document.getElementById('s-algo').value;
+
+  btn.className='tm-train-btn running';
+  btn.innerHTML=`<span class="spinner"></span>${T('preparing')}`;
+  btn.disabled=true;
+
+  document.getElementById('s-prog').classList.add('on');
+
+  let pi=0, pt=32;
+  const phases=[
+    [.15, T('ph_loading')],[.4, T('ph_feature')],
+    [.7,  T('ph_fitting')],[.9, T('ph_eval')],[1, T('ph_done')]
+  ];
+  const iv=setInterval(()=>{
+    pi++;
+    const pct=pi/pt;
+    document.getElementById('s-pfill').style.width=(pct*100)+'%';
+    document.getElementById('s-ep-txt').textContent=`${currentLang==='tm'?'Epoha':'Epoch'} ${Math.floor(pct*epochs)}/${epochs}`;
+    const loss=Math.max(.01,1.2-pct*1.1+(Math.random()-.5)*.04);
+    document.getElementById('s-loss-txt').textContent=`Loss: ${loss.toFixed(4)}`;
+    for(const [t,m] of phases){ if(pct<=t){document.getElementById('s-pinfo').textContent=m;break;} }
+    if(pi>=pt) clearInterval(iv);
+  },55);
+
+  try {
+    const genRes = await api('/api/supervised/generate',{n_classes:nClass,n_samples:nSamp*nClass});
+    sPoints = genRes.points;
+    const res = await api('/api/supervised/train',{points:sPoints,algorithm:algo,epochs});
+    clearInterval(iv);
+    document.getElementById('s-pfill').style.width='100%';
+    document.getElementById('s-pinfo').textContent=T('ph_done');
+    btn.className='tm-train-btn active';
+    btn.innerHTML=T('btn_retrain_model');
+    btn.disabled=false;
+    showSupervisedResults(res, getSClassNames());
+  } catch(e){
+    clearInterval(iv);
+    btn.className='tm-train-btn active';
+    btn.innerHTML=T('btn_train_model');
+    btn.disabled=false;
+    toast(T('error_prefix')+e.message);
+  }
+}
+
+function showSupervisedResults(res, classNames){
+  lastTrainedResult = res;
+  document.getElementById('s-nomsg').style.display='none';
+  document.getElementById('s-results').style.display='block';
+  document.getElementById('s-expbtn').classList.add('on');
+  document.getElementById('s-acc-badge').textContent=`✓ ${currentLang==='tm'?'Takyklyk':'Accuracy'}: ${(res.accuracy*100).toFixed(1)}%`;
+
+  const bars = document.getElementById('s-conf-bars');
+  bars.innerHTML='';
+  let vals = classNames.map(()=>Math.random());
+  const sm = vals.reduce((a,b)=>a+b,0);
+  vals = vals.map(v=>v/sm*100);
+  classNames.forEach((name,i)=>{
+    const row=document.createElement('div'); row.className='conf-row';
+    row.innerHTML=`
+      <span class="conf-name">${name}</span>
+      <div class="conf-track"><div class="conf-fill" id="cfi-${i}" style="background:${S_COLORS[i%S_COLORS.length]};width:0%"></div></div>
+      <span class="conf-pct" id="cfp-${i}">0%</span>`;
+    bars.appendChild(row);
+  });
+  setTimeout(()=>{
+    vals.forEach((v,i)=>{
+      const f=document.getElementById('cfi-'+i);
+      const p=document.getElementById('cfp-'+i);
+      if(f) f.style.width=v.toFixed(1)+'%';
+      if(p) p.textContent=v.toFixed(0)+'%';
+    });
+  },120);
+
+  const bc=document.getElementById('s-boundary-canvas');
+  bc.classList.add('on');
+  const ctx=bc.getContext('2d');
+  const W=bc.width, H=bc.height;
+  ctx.clearRect(0,0,W,H); ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
+  res.boundary.forEach(p=>{
+    ctx.fillStyle=S_COLORS[p.label%S_COLORS.length]+'2a';
+    ctx.fillRect(p.x*(W/400)-5,p.y*(H/220)-5,14,14);
+  });
+  sPoints.forEach(p=>{
+    const px=p.x*(W/400), py=p.y*(H/220);
+    ctx.beginPath(); ctx.arc(px,py,4,0,Math.PI*2);
+    ctx.fillStyle=S_COLORS[p.label%S_COLORS.length]+'cc'; ctx.fill();
+    ctx.strokeStyle=S_COLORS[p.label%S_COLORS.length]; ctx.lineWidth=1; ctx.stroke();
+  });
+
+  const tbody=document.getElementById('s-cls-tbody');
+  tbody.innerHTML='';
+  res.class_stats.forEach((cs,i)=>{
+    const name = classNames[cs.class]||('Class '+cs.class);
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${S_COLORS[i%S_COLORS.length]};margin-right:6px"></span>${name}</td><td>${(cs.precision*100).toFixed(1)}%</td><td>${(cs.recall*100).toFixed(1)}%</td><td>${cs.support}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  const lc=document.getElementById('s-loss-canvas');
+  lc.classList.add('on');
+  drawLineChart('s-loss-canvas',res.losses,'#1a73e8');
+}
+
+// ════════════════════════════════════════════════════════
+//  UNSUPERVISED
+// ════════════════════════════════════════════════════════
+let uPoints = [];
+
+async function generateUnsupervised() {
+  toast(T('generating'));
+  try {
+    const data = await api('/api/unsupervised/generate', {
+      k: +document.getElementById('u-k').value,
+      n_samples: +document.getElementById('u-nsamp').value
+    });
+    uPoints = data.points;
+    document.getElementById('u-data-card').style.display='block';
+    document.getElementById('u-pt-count').textContent=`${uPoints.length} ${T('pts_label')}`;
+    drawScatter('u-raw-canvas', uPoints.map(p=>({...p,label:0})), ['#9aa0a6'], 3);
+    document.getElementById('u-data-info').style.display='block';
+    document.getElementById('u-data-info').textContent=T('data_points_loaded')(uPoints.length);
+    toast(T('points_generated')(uPoints.length));
+  } catch(e){ toast(T('error_prefix')+e.message); }
+}
+
+async function runClustering() {
+  if (!uPoints.length) { toast(T('train_first_toast')); return; }
+  const algo = document.getElementById('u-algo').value;
+  const k    = +document.getElementById('u-k').value;
+  setBtn('u-tbtn','running-g',`<span class="spinner"></span>${T('clustering')}...`);
+  animateProgress('u-prog','u-pfill','u-ep-txt','u-loss-txt','u-pinfo', 25, '#1e8e3e',
+    [[.15,T('ph_init')],[.4,T('ph_assign')],[.7,T('ph_update')],[.9,T('ph_converge')],[1,T('ph_done')]],
+    async () => {
+      try {
+        const res = await api('/api/unsupervised/cluster', { points: uPoints, algorithm: algo, k });
+        setBtn('u-tbtn','ready-g', currentLang==='tm'?'Gaýtadan Işlet':'Re-run Clustering');
+        showClusterResults(res);
+      } catch(e){ setBtn('u-tbtn','ready-g',T('btn_run_clustering')); toast(T('error_prefix')+e.message); }
+    }
+  );
+}
+
+function showClusterResults(res) {
+  document.getElementById('u-nomsg').style.display='none';
+  document.getElementById('u-results').style.display='block';
+  document.getElementById('u-expbtn').classList.add('on');
+
+  const canvas = document.getElementById('u-result-canvas');
+  canvas.classList.add('on');
+  const ctx = canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H); ctx.fillStyle='#fafafa'; ctx.fillRect(0,0,W,H);
+  const xs=uPoints.map(p=>p.x), ys=uPoints.map(p=>p.y);
+  const xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys);
+  const toX=x=>(x-xmin)/(xmax-xmin||1)*(W-20)+10;
+  const toY=y=>H-10-(y-ymin)/(ymax-ymin||1)*(H-20);
+  uPoints.forEach((p,i) => {
+    const lbl = res.labels[i]>=0?res.labels[i]:0;
+    ctx.beginPath(); ctx.arc(toX(p.x),toY(p.y),4,0,Math.PI*2);
+    ctx.fillStyle=COLORS[lbl%COLORS.length]+'aa'; ctx.fill();
+    ctx.strokeStyle=COLORS[lbl%COLORS.length]; ctx.lineWidth=1; ctx.stroke();
+  });
+  if (res.centers && res.centers.length) {
+    res.centers.forEach((c,i) => {
+      ctx.beginPath(); ctx.arc(toX(c[0]),toY(c[1]),9,0,Math.PI*2);
+      ctx.fillStyle=COLORS[i%COLORS.length]; ctx.fill();
+      ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+      ctx.fillStyle='#fff'; ctx.font='bold 10px Roboto'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(i+1,toX(c[0]),toY(c[1]));
+    });
+  }
+
+  const badges = document.getElementById('u-badges');
+  badges.innerHTML='';
+  Object.entries(res.cluster_counts).forEach(([cl,n]) => {
+    const idx=parseInt(cl); if(idx<0) return;
+    const b=document.createElement('div'); b.className='cl-badge';
+    b.style.background=COLORS[idx%COLORS.length]+'22'; b.style.color=COLORS[idx%COLORS.length]; b.style.border=`1px solid ${COLORS[idx%COLORS.length]}44`;
+    const clusterWord = currentLang==='tm' ? 'Klaster' : 'Cluster';
+    const ptsWord = currentLang==='tm' ? 'nok' : 'pts';
+    b.innerHTML=`<span style="width:7px;height:7px;border-radius:50%;background:${COLORS[idx%COLORS.length]};display:inline-block"></span> ${clusterWord} ${idx+1} — ${n} ${ptsWord}`;
+    badges.appendChild(b);
+  });
+
+  document.getElementById('u-nclust').textContent  = res.n_clusters;
+  document.getElementById('u-inertia').textContent  = res.inertia > 1000 ? res.inertia.toFixed(0) : res.inertia.toFixed(1);
+  document.getElementById('u-sil').textContent      = res.silhouette.toFixed(3);
+
+  const ic = document.getElementById('u-iter-canvas');
+  ic.classList.add('on');
+  drawLineChart('u-iter-canvas', res.inertia_iters, '#1e8e3e');
+}
+
+// ════════════════════════════════════════════════════════
+//  REINFORCEMENT
+// ════════════════════════════════════════════════════════
+const GS = 5;
+let rlGrid = [];
+let agentPos = {r:0,c:0};
+let agentRunning = false;
+let agentInterval = null;
+let rlPolicy = [];
+
+function initGrid() {
+  rlGrid = Array.from({length:GS},()=>Array(GS).fill('empty'));
+  rlGrid[0][0]='agent'; rlGrid[GS-1][GS-1]='goal';
+  rlGrid[1][1]='wall'; rlGrid[2][3]='wall'; rlGrid[1][3]='wall';
+  rlGrid[3][1]='danger';
+  agentPos={r:0,c:0};
+  renderGrid();
+}
+
+function renderGrid() {
+  const g = document.getElementById('rl-grid-el');
+  g.innerHTML='';
+  const emap={empty:'',agent:'🤖',goal:'🎯',wall:'',danger:'💀'};
+  const bg={empty:'#fff',agent:'#e8f0fe',goal:'#e6f4ea',wall:'#5f6368',danger:'#fce8e6'};
+  for (let r=0;r<GS;r++) for (let c=0;c<GS;c++) {
+    const d=document.createElement('div');
+    d.className='cell '+(rlGrid[r][c]||'empty');
+    d.style.background=bg[rlGrid[r][c]||'empty'];
+    d.textContent=emap[rlGrid[r][c]||'empty']||'';
+    d.addEventListener('click',()=>toggleCell(r,c));
+    g.appendChild(d);
+  }
+}
+
+function toggleCell(r,c) {
+  if ((r===0&&c===0)||(r===GS-1&&c===GS-1)) return;
+  const cycle=['empty','wall','danger'];
+  const idx=cycle.indexOf(rlGrid[r][c]);
+  rlGrid[r][c]=cycle[(idx+1)%cycle.length];
+  renderGrid();
+}
+
+function resetEnv() { initGrid(); }
+
+async function trainRL() {
+  const episodes = +document.getElementById('rl-episodes').value;
+  const alpha    = +document.getElementById('rl-alpha').value;
+  const gamma    = +document.getElementById('rl-gamma').value;
+  const epsilon  = +document.getElementById('rl-eps').value;
+  const walls=[], dangers=[];
+  for (let r=0;r<GS;r++) for (let c=0;c<GS;c++) {
+    if (rlGrid[r][c]==='wall')   walls.push([r,c]);
+    if (rlGrid[r][c]==='danger') dangers.push([r,c]);
+  }
+
+  setBtn('rl-tbtn','running-o',`<span class="spinner"></span>${T('training')}...`);
+  document.getElementById('rl-prog').classList.add('on');
+
+  let progI=0, progTotal=40;
+  const rlPhases=[
+    [.2,T('ph_explore')],[.5,T('ph_learn')],
+    [.75,T('ph_exploit')],[.95,T('ph_refine')],[1,T('ph_train_done')]
+  ];
+  const piv = setInterval(()=>{
+    progI++;
+    const pct=progI/progTotal;
+    document.getElementById('rl-pfill').style.width=(pct*100)+'%';
+    const epWord = currentLang==='tm'?'Epizod':'Episode';
+    document.getElementById('rl-ep-txt').textContent=`${epWord} ${Math.floor(pct*episodes)}/${episodes}`;
+    const eps=Math.max(0.05,epsilon-pct*0.85);
+    document.getElementById('rl-eps-txt').textContent=`ε: ${eps.toFixed(2)}`;
+    for (const [t,msg] of rlPhases) { if(pct<=t){document.getElementById('rl-pinfo').textContent=msg;break;} }
+    if(progI>=progTotal) clearInterval(piv);
+  }, 60);
+
+  try {
+    const res = await api('/api/rl/train', {alpha, gamma, epsilon, episodes, walls, dangers});
+    clearInterval(piv);
+    document.getElementById('rl-pfill').style.width='100%';
+    document.getElementById('rl-pinfo').textContent=T('ph_train_done');
+    setBtn('rl-tbtn','ready-o', currentLang==='tm'?'Gaýtadan Türgenleşdir':'Retrain Agent');
+    rlPolicy = res.policy;
+    showRLResults(res);
+  } catch(e) {
+    clearInterval(piv);
+    setBtn('rl-tbtn','ready-o',T('btn_train_agent'));
+    toast(T('error_prefix')+e.message);
+  }
+}
+
+function showRLResults(res) {
+  document.getElementById('rl-nomsg').style.display='none';
+  document.getElementById('rl-results').style.display='block';
+  document.getElementById('rl-expbtn').classList.add('on');
+
+  document.getElementById('rl-ep-val').textContent   = res.total_episodes;
+  document.getElementById('rl-suc-val').textContent  = res.success_rate+'%';
+  document.getElementById('rl-step-val').textContent = res.avg_steps;
+  document.getElementById('rl-rew-val').textContent  = Math.max(...res.rewards).toFixed(0);
+
+  drawLineChart('rl-reward-canvas', res.smoothed, '#e37400');
+
+  const pg = document.getElementById('rl-policy-el');
+  pg.innerHTML='';
+  const arrowColors=['#1a73e8','#34a853','#e37400','#ea4335'];
+  for (let r=0;r<GS;r++) for (let c=0;c<GS;c++) {
+    const d=document.createElement('div'); d.className='pcell';
+    if (rlGrid[r][c]==='wall')       { d.textContent='⬛'; d.style.background='#f1f3f4'; }
+    else if (r===GS-1&&c===GS-1)    { d.textContent='🎯'; d.style.background='#e6f4ea'; }
+    else if (rlGrid[r][c]==='danger'){ d.textContent='💀'; d.style.background='#fce8e6'; }
+    else {
+      const cell = res.policy.find(p=>p.r===r&&p.c===c);
+      if (cell) { d.textContent=cell.arrow; d.style.color=arrowColors[cell.action]; }
+    }
+    pg.appendChild(d);
+  }
+  addLog(T('train_done_log')(res.success_count, res.total_episodes, res.success_rate), 'ok');
+}
+
+function addLog(msg, type='') {
+  const log = document.getElementById('rl-log');
+  const line = document.createElement('div');
+  const t = new Date().toLocaleTimeString('en',{hour12:false});
+  line.className = type; line.textContent = `[${t}] ${msg}`;
+  log.appendChild(line); log.scrollTop=log.scrollHeight;
+}
+
+function runAgent() {
+  if (!rlPolicy.length) { toast(T('train_agent_toast')); return; }
+  if (agentRunning) return;
+  agentRunning=true;
+  agentPos={r:0,c:0};
+  for (let r=0;r<GS;r++) for (let c=0;c<GS;c++) {
+    if (rlGrid[r][c]==='agent') rlGrid[r][c]='empty';
+  }
+  rlGrid[0][0]='agent'; renderGrid();
+  addLog(T('agent_started'));
+  let steps=0;
+  agentInterval = setInterval(()=>{
+    if(!agentRunning||steps>30){
+      clearInterval(agentInterval); agentRunning=false;
+      if(agentPos.r===GS-1&&agentPos.c===GS-1) addLog(T('reached_goal')(steps),'ok');
+      else addLog(T('stopped_after')(steps),'fail');
+      return;
+    }
+    const cell=rlPolicy.find(p=>p.r===agentPos.r&&p.c===agentPos.c);
+    if(!cell){clearInterval(agentInterval);agentRunning=false;return;}
+    const moves=[[-1,0],[0,1],[1,0],[0,-1]];
+    const [dr,dc]=moves[cell.action];
+    const nr=agentPos.r+dr, nc=agentPos.c+dc;
+    if(nr<0||nr>=GS||nc<0||nc>=GS||rlGrid[nr][nc]==='wall'){steps++;return;}
+    if(rlGrid[agentPos.r][agentPos.c]!=='goal') rlGrid[agentPos.r][agentPos.c]='empty';
+    agentPos={r:nr,c:nc};
+    if(rlGrid[nr][nc]!=='goal') rlGrid[nr][nc]='agent';
+    renderGrid(); steps++;
+    if(agentPos.r===GS-1&&agentPos.c===GS-1){
+      clearInterval(agentInterval); agentRunning=false;
+      addLog(T('reached_goal')(steps),'ok');
+    }
+  }, 300);
+}
+
+function stopAgent(){ agentRunning=false; clearInterval(agentInterval); addLog(T('stopped'),'fail'); }
+function resetRL(){
+  stopAgent(); initGrid();
+  document.getElementById('rl-log').innerHTML='';
+  addLog(T('env_reset'));
+}
+
+// ════════════════════════════════════════════════════════
+//  WEBCAM — Class sample capture
+// ════════════════════════════════════════════════════════
+let wmClassIdx = 0;
+let wmStream   = null;
+let wmCaptured = 0;
+let wmHolding  = false;
+let wmHoldInterval = null;
+
+function openWebcam(classIdx) {
+  wmClassIdx = classIdx;
+  wmCaptured = 0;
+  document.getElementById('wm-thumbs').innerHTML = '';
+  const nameEl = document.getElementById('scname-' + classIdx);
+  const name   = nameEl ? nameEl.value : ('Class ' + (classIdx + 1));
+  document.getElementById('wm-title').textContent = '📷 Webcam — ' + name;
+  document.getElementById('wm-count-lbl').innerHTML = `0 <span>${T('samples_taken')}</span>`;
+  document.getElementById('webcam-modal').classList.add('open');
+  startWmStream();
+}
+
+async function startWmStream() {
+  try {
+    wmStream = await navigator.mediaDevices.getUserMedia({ video: { width:640, height:480 }, audio: false });
+    document.getElementById('wm-video').srcObject = wmStream;
+  } catch(e) {
+    toast(currentLang === 'tm' ? 'Kamera açylmady: ' + e.message : 'Camera error: ' + e.message);
+    closeWebcam();
+  }
+}
+
+function wmCapture() {
+  const video  = document.getElementById('wm-video');
+  const canvas = document.getElementById('wm-hidden-canvas');
+  const ctx    = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, 224, 224);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+  // flash effect
+  const flash = document.getElementById('wm-flash');
+  flash.style.opacity = '0.8';
+  setTimeout(() => flash.style.opacity = '0', 120);
+  // store
+  sSamples[wmClassIdx] = sSamples[wmClassIdx] || [];
+  sSamples[wmClassIdx].push(dataUrl);
+  wmCaptured++;
+  document.getElementById('wm-count-lbl').innerHTML = `${wmCaptured} <span>${T('samples_taken')}</span>`;
+  // add thumbnail in modal
+  const thumbs = document.getElementById('wm-thumbs');
+  const img    = document.createElement('img');
+  img.src      = dataUrl;
+  img.className= 'tm-thumb';
+  thumbs.appendChild(img);
+  // also update class card thumbs
+  renderSThumbs(wmClassIdx);
+}
+
+function wmHoldCapture() {
+  const btn = document.getElementById('wm-hold-btn');
+  if (wmHolding) {
+    // stop
+    wmHolding = false;
+    clearInterval(wmHoldInterval);
+    btn.style.background = '#34a853';
+    btn.classList.remove('recording');
+  } else {
+    // start
+    wmHolding = true;
+    btn.style.background = '#c5221f';
+    btn.classList.add('recording');
+    wmHoldInterval = setInterval(() => { if(wmHolding) wmCapture(); }, 200);
+  }
+}
+
+function closeWebcam() {
+  if (wmHolding) { wmHolding = false; clearInterval(wmHoldInterval); }
+  if (wmStream) { wmStream.getTracks().forEach(t => t.stop()); wmStream = null; }
+  document.getElementById('webcam-modal').classList.remove('open');
+}
+
+// ════════════════════════════════════════════════════════
+//  PREVIEW — Live test with webcam or file
+// ════════════════════════════════════════════════════════
+let prevStream  = null;
+let prevPredInterval = null;
+let lastTrainedResult = null; // stores res from training
+
+function setPrevMode(mode) {
+  document.getElementById('ptab-cam').classList.toggle('active', mode === 'cam');
+  document.getElementById('ptab-file').classList.toggle('active', mode === 'file');
+  document.getElementById('prev-cam-wrap').style.display  = mode === 'cam'  ? 'block' : 'none';
+  document.getElementById('prev-file-wrap').style.display = mode === 'file' ? 'block' : 'none';
+  document.getElementById('prev-pred-result').style.display = 'none';
+  if (mode === 'file') stopPrevCam();
+}
+
+async function startPrevCam() {
+  try {
+    prevStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    document.getElementById('prev-video').srcObject = prevStream;
+    document.getElementById('prev-cam-overlay').style.display = 'none';
+    document.getElementById('prev-cam-start').style.display = 'none';
+    document.getElementById('prev-cam-snap').style.display  = '';
+    document.getElementById('prev-cam-stop').style.display  = '';
+    // Live continuous prediction every 1s
+    prevPredInterval = setInterval(() => snapAndPredict(true), 1200);
+  } catch(e) {
+    toast(currentLang === 'tm' ? 'Kamera açylmady' : 'Camera unavailable: ' + e.message);
+  }
+}
+
+function stopPrevCam() {
+  if (prevPredInterval) { clearInterval(prevPredInterval); prevPredInterval = null; }
+  if (prevStream) { prevStream.getTracks().forEach(t => t.stop()); prevStream = null; }
+  document.getElementById('prev-cam-overlay').style.display = 'flex';
+  document.getElementById('prev-cam-start').style.display = '';
+  document.getElementById('prev-cam-snap').style.display  = 'none';
+  document.getElementById('prev-cam-stop').style.display  = 'none';
+}
+
+function snapAndPredict(silent = false) {
+  if (!lastTrainedResult) {
+    if (!silent) toast(currentLang === 'tm' ? 'Modeli öňi türgenleşdir!' : 'Train the model first!');
+    return;
+  }
+  const video  = document.getElementById('prev-video');
+  const canvas = document.getElementById('prev-snap-canvas');
+  const ctx    = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  // Use random prediction (since we simulate — no real image→feature pipeline)
+  simulatePredict(getSClassNames());
+}
+
+function handlePrevFile(input) {
+  if (!input.files[0]) return;
+  const url = URL.createObjectURL(input.files[0]);
+  document.getElementById('prev-file-img').src = url;
+  document.getElementById('prev-file-preview').style.display = 'block';
+  document.getElementById('prev-drop-zone').style.display = 'none';
+  if (lastTrainedResult) {
+    simulatePredict(getSClassNames());
+  } else {
+    toast(currentLang === 'tm' ? 'Modeli öňi türgenleşdir!' : 'Train the model first!');
+  }
+}
+
+function handlePrevDrop(e) {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if (!file || !file.type.startsWith('image/')) return;
+  const url = URL.createObjectURL(file);
+  document.getElementById('prev-file-img').src = url;
+  document.getElementById('prev-file-preview').style.display = 'block';
+  document.getElementById('prev-drop-zone').style.display = 'none';
+  const dropZone = document.getElementById('prev-drop-zone');
+  dropZone.style.borderColor = '#dadce0';
+  dropZone.style.background  = '';
+  if (lastTrainedResult) simulatePredict(getSClassNames());
+}
+
+function simulatePredict(classNames) {
+  if (!classNames.length) return;
+  // Simulate softmax — weighted random (not real inference)
+  const n = classNames.length;
+  let raw = classNames.map(() => Math.random() * 2 + 0.5);
+  // make one class dominate sometimes
+  const winner = Math.floor(Math.random() * n);
+  raw[winner] += 2.5;
+  const sum = raw.reduce((a,b) => a+b, 0);
+  const probs = raw.map(v => (v / sum * 100));
+
+  document.getElementById('prev-pred-result').style.display = 'block';
+  const barsEl = document.getElementById('prev-conf-bars');
+  barsEl.innerHTML = '';
+  classNames.forEach((name, i) => {
+    const row = document.createElement('div'); row.className = 'conf-row';
+    row.innerHTML = `
+      <span class="conf-name">${name}</span>
+      <div class="conf-track"><div class="conf-fill" id="ppf-${i}" style="background:${S_COLORS[i%S_COLORS.length]};width:0%"></div></div>
+      <span class="conf-pct" id="ppp-${i}">0%</span>`;
+    barsEl.appendChild(row);
+  });
+  setTimeout(() => {
+    probs.forEach((v, i) => {
+      const f = document.getElementById('ppf-' + i);
+      const p = document.getElementById('ppp-' + i);
+      if (f) f.style.width = v.toFixed(1) + '%';
+      if (p) p.textContent = v.toFixed(0) + '%';
+    });
+    const winName = classNames[winner];
+    const winPct  = probs[winner].toFixed(0);
+    document.getElementById('prev-pred-label').textContent = T('predict_label')(winName, winPct);
+  }, 80);
+}
+
+// ════════════════════════════════════════════════════════
+//  SHARE MODAL
+// ════════════════════════════════════════════════════════
+function openShareModal() {
+  const url = window.location.href.split('?')[0];
+  document.getElementById('share-url-inp').value = url;
+  document.getElementById('share-modal').classList.add('open');
+}
+
+function closeShareModal() {
+  document.getElementById('share-modal').classList.remove('open');
+}
+
+function copyShareUrl() {
+  const inp = document.getElementById('share-url-inp');
+  navigator.clipboard.writeText(inp.value).then(() => {
+    toast(T('copied'));
+  }).catch(() => {
+    inp.select(); document.execCommand('copy');
+    toast(T('copied'));
+  });
+}
+
+function shareVia(platform) {
+  const url  = encodeURIComponent(window.location.href);
+  const text = encodeURIComponent('ML Studio — AI öwretmek simüläsiýasy');
+  const links = {
+    telegram: `https://t.me/share/url?url=${url}&text=${text}`,
+    whatsapp: `https://wa.me/?text=${text}%20${url}`,
+    email:    `mailto:?subject=ML%20Studio&body=${text}%20${url}`
+  };
+  window.open(links[platform], '_blank');
+}
+
+function downloadModelJson() {
+  const modelData = {
+    name: document.getElementById('nav-proj-input').value || 'ML Project',
+    algorithm: document.getElementById('s-algo').value,
+    classes: getSClassNames(),
+    accuracy: lastTrainedResult ? lastTrainedResult.accuracy : null,
+    class_stats: lastTrainedResult ? lastTrainedResult.class_stats : [],
+    exported_at: new Date().toISOString(),
+    version: '1.0'
+  };
+  const blob = new Blob([JSON.stringify(modelData, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (modelData.name.replace(/\s+/g, '_') || 'model') + '.json';
+  a.click();
+  toast(currentLang === 'tm' ? '✓ model.json ýüklendi' : '✓ model.json downloaded');
+}
+
+function exportModel() {
+  if (!lastTrainedResult) {
+    toast(currentLang === 'tm' ? 'Ilki modeli türgenleşdir!' : 'Train a model first!');
+    return;
+  }
+  downloadModelJson();
+}
+
+// ════════════════════════════════════════════════════════
+//  NAV UPLOAD
+// ════════════════════════════════════════════════════════
+function handleNavUpload(input) {
+  if (!input.files[0]) return;
+  const file = input.files[0];
+  if (file.name.endsWith('.json')) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = JSON.parse(e.target.result);
+        toast((currentLang==='tm'?'✓ Model ýüklendi: ':'✓ Model loaded: ') + (data.name||''));
+      } catch { toast(currentLang==='tm'?'JSON okalmady':'Invalid JSON'); }
+    };
+    reader.readAsText(file);
+  } else {
+    toast(currentLang==='tm' ? '✓ Faýl ýüklendi: ' + file.name : '✓ File uploaded: ' + file.name);
+  }
+  input.value = '';
+}
+
+// Close modals on backdrop click
+document.getElementById('webcam-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeWebcam();
+});
+document.getElementById('share-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeShareModal();
+});
+
+// ── INIT
+initGrid();
+
+// Load saved language preference, default to Turkmen
+const savedLang = localStorage.getItem('ml_lang') || 'tm';
+window.addEventListener('load', () => {
+  setLang(savedLang);
+  generateUnsupervised();
+});
+</script>
+</body>
+</html>
