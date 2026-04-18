@@ -1,6 +1,7 @@
 Flask
-Flask-CORS  
+Flask-CORS
 pandas
 numpy
 scikit-learn
 joblib
+Pillow

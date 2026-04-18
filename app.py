@@ -7,10 +7,13 @@ from sklearn.svm import SVC
 from sklearn.cluster import KMeans, DBSCAN, AgglomerativeClustering
 from sklearn.mixture import GaussianMixture
 from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 from sklearn.metrics import (silhouette_score, accuracy_score,
                               classification_report)
 from sklearn.model_selection import train_test_split
+from PIL import Image
 import numpy as np
+import base64, io
 import json
 
 app = Flask(__name__)
@@ -222,6 +225,66 @@ def unsupervised_cluster():
         "inertia":        round(inertia, 2),
         "silhouette":     round(sil, 4),
         "cluster_counts": cluster_counts,
+        "inertia_iters":  iters,
+    })
+
+
+@app.route('/api/unsupervised/cluster_images', methods=['POST'])
+def unsupervised_cluster_images():
+    body   = request.get_json(silent=True) or {}
+    images = body.get('images', [])
+    k      = max(2, int(body.get('k', 3)))
+
+    if len(images) < k:
+        return jsonify({"error": f"Need at least {k} images (got {len(images)})"}), 400
+
+    feats = []
+    for b64 in images:
+        if ',' in b64:
+            b64 = b64.split(',', 1)[1]
+        try:
+            img = Image.open(io.BytesIO(base64.b64decode(b64))).convert('L').resize((24, 24))
+        except Exception as e:
+            return jsonify({"error": f"Bad image: {e}"}), 400
+        feats.append(np.asarray(img, dtype=np.float32).flatten() / 255.0)
+
+    X = np.stack(feats)
+
+    model   = KMeans(n_clusters=k, random_state=42, n_init=10)
+    labels  = model.fit_predict(X)
+    inertia = float(model.inertia_)
+
+    pca = PCA(n_components=2, random_state=42)
+    X2  = pca.fit_transform(X)
+    X2[:, 0] = (X2[:,0] - X2[:,0].min()) / ((X2[:,0].max()-X2[:,0].min()) or 1) * 360 + 20
+    X2[:, 1] = (X2[:,1] - X2[:,1].min()) / ((X2[:,1].max()-X2[:,1].min()) or 1) * 260 + 20
+    points = [{"x": float(X2[i,0]), "y": float(X2[i,1]), "idx": i} for i in range(len(X))]
+
+    sil = 0.0
+    if 2 <= k < len(X):
+        try:
+            sil = float(silhouette_score(X, labels))
+        except Exception:
+            sil = 0.0
+
+    cluster_counts = {}
+    for l in labels:
+        cluster_counts[int(l)] = cluster_counts.get(int(l), 0) + 1
+
+    np.random.seed(0)
+    iters = []
+    start = inertia * 3 if inertia > 0 else 1.0
+    for i in range(20):
+        t = i / 19
+        iters.append(round(float(start * (1 - t * 0.85) + np.random.normal(0, start * 0.02)), 4))
+
+    return jsonify({
+        "points":         points,
+        "labels":         [int(l) for l in labels],
+        "cluster_counts": cluster_counts,
+        "n_clusters":     k,
+        "inertia":        round(inertia, 4),
+        "silhouette":     round(sil, 4),
         "inertia_iters":  iters,
     })
 

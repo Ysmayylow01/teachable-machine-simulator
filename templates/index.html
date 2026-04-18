@@ -606,7 +606,12 @@ canvas.vis.on{display:block}
             <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
             <span data-i18n="btn_generate">Generate</span>
           </button>
+          <button class="sbtn g" onclick="document.getElementById('u-img-file').click()">
+            <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+            <span data-i18n="btn_upload_images">Upload Images</span>
+          </button>
         </div>
+        <input type="file" id="u-img-file" accept="image/*" multiple style="display:none" onchange="handleImageUpload(event)">
         <input type="file" class="fi" id="u-file" accept=".csv,.json" onchange="toast(T('csv_loaded'))">
         <div id="u-data-info" style="font-size:12px;color:#5f6368;margin-top:8px;display:none"></div>
       </div>
@@ -880,6 +885,9 @@ const LANG = {
     gen_or_upload: "Generate or upload a dataset:",
     btn_generate: "Generate",
     btn_upload_csv: "Upload CSV",
+    btn_upload_images: "Upload Images",
+    images_loaded: (n) => `✓ ${n} image${n!==1?'s':''} loaded`,
+    need_more_images: (k) => `Need at least ${k} images`,
     csv_loaded: "CSV loaded (demo mode)",
     configuration: "Configuration",
     clusters_k: "Clusters (k)",
@@ -1014,6 +1022,9 @@ const LANG = {
     gen_or_upload: "Dataset dör ýa ýükle:",
     btn_generate: "Dörediň",
     btn_upload_csv: "CSV Ýükle",
+    btn_upload_images: "Surat Ýükle",
+    images_loaded: (n) => `✓ ${n} surat ýüklendi`,
+    need_more_images: (k) => `Iň azyndan ${k} surat gerek`,
     csv_loaded: "CSV ýüklendi (demo düzgüni)",
     configuration: "Sazlama",
     clusters_k: "Klasterler (k)",
@@ -1462,6 +1473,8 @@ function showSupervisedResults(res, classNames){
 //  UNSUPERVISED
 // ════════════════════════════════════════════════════════
 let uPoints = [];
+let uImages = [];
+let uMode = 'points';
 
 async function generateUnsupervised() {
   toast(T('generating'));
@@ -1471,6 +1484,9 @@ async function generateUnsupervised() {
       n_samples: +document.getElementById('u-nsamp').value
     });
     uPoints = data.points;
+    uMode = 'points';
+    uImages = [];
+    clearImageGroups();
     document.getElementById('u-data-card').style.display='block';
     document.getElementById('u-pt-count').textContent=`${uPoints.length} ${T('pts_label')}`;
     drawScatter('u-raw-canvas', uPoints.map(p=>({...p,label:0})), ['#9aa0a6'], 3);
@@ -1480,10 +1496,82 @@ async function generateUnsupervised() {
   } catch(e){ toast(T('error_prefix')+e.message); }
 }
 
+function fileToDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+async function handleImageUpload(event) {
+  const files = Array.from(event.target.files || []);
+  if (!files.length) return;
+  uImages = [];
+  for (const f of files) {
+    if (!f.type.startsWith('image/')) continue;
+    uImages.push(await fileToDataURL(f));
+  }
+  event.target.value = '';
+  if (!uImages.length) return;
+  uMode = 'images';
+  uPoints = [];
+  clearImageGroups();
+  document.getElementById('u-data-card').style.display='block';
+  document.getElementById('u-pt-count').textContent = T('img_samples')(uImages.length);
+  document.getElementById('u-data-info').style.display='block';
+  document.getElementById('u-data-info').textContent = T('img_samples')(uImages.length);
+  renderImageThumbs();
+  toast(T('images_loaded')(uImages.length));
+}
+
+function renderImageThumbs() {
+  const canvas = document.getElementById('u-raw-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = '#fafafa';
+  ctx.fillRect(0,0,W,H);
+  const n = uImages.length;
+  const cols = Math.max(1, Math.ceil(Math.sqrt(n * W / H)));
+  const rows = Math.ceil(n / cols);
+  const tw = W / cols, th = H / rows;
+  uImages.forEach((src, i) => {
+    const r = Math.floor(i/cols), c = i%cols;
+    const img = new Image();
+    img.onload = () => ctx.drawImage(img, c*tw+1, r*th+1, tw-2, th-2);
+    img.src = src;
+  });
+}
+
+function clearImageGroups() {
+  const grp = document.getElementById('u-img-groups');
+  if (grp) grp.remove();
+}
+
 async function runClustering() {
-  if (!uPoints.length) { toast(T('train_first_toast')); return; }
   const algo = document.getElementById('u-algo').value;
   const k    = +document.getElementById('u-k').value;
+
+  if (uMode === 'images') {
+    if (!uImages.length) { toast(T('train_first_toast')); return; }
+    if (uImages.length < k) { toast(T('need_more_images')(k)); return; }
+    setBtn('u-tbtn','running-g',`<span class="spinner"></span>${T('clustering')}...`);
+    animateProgress('u-prog','u-pfill','u-ep-txt','u-loss-txt','u-pinfo', 25, '#1e8e3e',
+      [[.15,T('ph_init')],[.4,T('ph_assign')],[.7,T('ph_update')],[.9,T('ph_converge')],[1,T('ph_done')]],
+      async () => {
+        try {
+          const res = await api('/api/unsupervised/cluster_images', { images: uImages, k });
+          setBtn('u-tbtn','ready-g', currentLang==='tm'?'Gaýtadan Işlet':'Re-run Clustering');
+          showImageClusterResults(res);
+        } catch(e){ setBtn('u-tbtn','ready-g',T('btn_run_clustering')); toast(T('error_prefix')+e.message); }
+      }
+    );
+    return;
+  }
+
+  if (!uPoints.length) { toast(T('train_first_toast')); return; }
   setBtn('u-tbtn','running-g',`<span class="spinner"></span>${T('clustering')}...`);
   animateProgress('u-prog','u-pfill','u-ep-txt','u-loss-txt','u-pinfo', 25, '#1e8e3e',
     [[.15,T('ph_init')],[.4,T('ph_assign')],[.7,T('ph_update')],[.9,T('ph_converge')],[1,T('ph_done')]],
@@ -1495,6 +1583,76 @@ async function runClustering() {
       } catch(e){ setBtn('u-tbtn','ready-g',T('btn_run_clustering')); toast(T('error_prefix')+e.message); }
     }
   );
+}
+
+function showImageClusterResults(res) {
+  document.getElementById('u-nomsg').style.display='none';
+  document.getElementById('u-results').style.display='block';
+  document.getElementById('u-expbtn').classList.add('on');
+
+  const canvas = document.getElementById('u-result-canvas');
+  canvas.classList.add('on');
+  const ctx = canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H); ctx.fillStyle='#fafafa'; ctx.fillRect(0,0,W,H);
+  const xs=res.points.map(p=>p.x), ys=res.points.map(p=>p.y);
+  const xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys);
+  const toX=x=>(x-xmin)/(xmax-xmin||1)*(W-40)+20;
+  const toY=y=>H-20-(y-ymin)/(ymax-ymin||1)*(H-40);
+  res.points.forEach((p,i) => {
+    const lbl = res.labels[i];
+    ctx.beginPath(); ctx.arc(toX(p.x),toY(p.y),5,0,Math.PI*2);
+    ctx.fillStyle=COLORS[lbl%COLORS.length]+'aa'; ctx.fill();
+    ctx.strokeStyle=COLORS[lbl%COLORS.length]; ctx.lineWidth=1; ctx.stroke();
+  });
+
+  const badges = document.getElementById('u-badges');
+  badges.innerHTML='';
+  const clusterWord = currentLang==='tm' ? 'Klaster' : 'Cluster';
+  const imgWord = currentLang==='tm' ? 'surat' : 'imgs';
+  Object.entries(res.cluster_counts).forEach(([cl,n]) => {
+    const idx=parseInt(cl);
+    const b=document.createElement('div'); b.className='cl-badge';
+    b.style.background=COLORS[idx%COLORS.length]+'22'; b.style.color=COLORS[idx%COLORS.length]; b.style.border=`1px solid ${COLORS[idx%COLORS.length]}44`;
+    b.innerHTML=`<span style="width:7px;height:7px;border-radius:50%;background:${COLORS[idx%COLORS.length]};display:inline-block"></span> ${clusterWord} ${idx+1} — ${n} ${imgWord}`;
+    badges.appendChild(b);
+  });
+
+  document.getElementById('u-nclust').textContent  = res.n_clusters;
+  document.getElementById('u-inertia').textContent  = res.inertia.toFixed(2);
+  document.getElementById('u-sil').textContent      = res.silhouette.toFixed(3);
+
+  clearImageGroups();
+  const grp = document.createElement('div');
+  grp.id = 'u-img-groups';
+  grp.style.cssText = 'margin-top:12px;display:flex;flex-direction:column;gap:8px';
+  const byCluster = {};
+  res.labels.forEach((lbl, i) => { (byCluster[lbl] = byCluster[lbl] || []).push(i); });
+  Object.keys(byCluster).sort((a,b)=>a-b).forEach(cl => {
+    const idx = parseInt(cl);
+    const color = COLORS[idx%COLORS.length];
+    const wrap = document.createElement('div');
+    wrap.style.cssText = `padding:8px;border-left:3px solid ${color};background:#fafafa;border-radius:4px`;
+    const title = document.createElement('div');
+    title.style.cssText = `font-size:11px;font-weight:500;color:${color};margin-bottom:4px;font-family:'Google Sans',sans-serif`;
+    title.textContent = `${clusterWord} ${idx+1} — ${byCluster[cl].length} ${imgWord}`;
+    wrap.appendChild(title);
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;flex-wrap:wrap;gap:3px';
+    byCluster[cl].forEach(i => {
+      const im = document.createElement('img');
+      im.src = uImages[i];
+      im.style.cssText = `width:36px;height:36px;object-fit:cover;border-radius:3px;border:1px solid ${color}44`;
+      row.appendChild(im);
+    });
+    wrap.appendChild(row);
+    grp.appendChild(wrap);
+  });
+  document.getElementById('u-results').appendChild(grp);
+
+  const ic = document.getElementById('u-iter-canvas');
+  ic.classList.add('on');
+  drawLineChart('u-iter-canvas', res.inertia_iters, '#1e8e3e');
 }
 
 function showClusterResults(res) {
